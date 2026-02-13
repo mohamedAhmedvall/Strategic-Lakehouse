@@ -1,0 +1,31 @@
+services:
+  db-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: maurisante_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d maurisante_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend-test:
+    build:
+      context: ./backend
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@db-test:5432/maurisante_test?schema=public
+      JWT_ACCESS_SECRET: test_access_secret
+      JWT_REFRESH_SECRET: test_refresh_secret
+      JWT_ACCESS_TTL: 1h
+      JWT_REFRESH_TTL_DAYS: 7
+      CORS_ORIGIN: http://localhost:5173
+      ADMIN_EMAIL: admin@maurisante.mr
+      ADMIN_PASSWORD: Admin12345!
+      ADMIN_NAME: MauriSante Admin
+    depends_on:
+      db-test:
+        condition: service_healthy
+    command: sh -c "npm run prisma:push && npm run test"
