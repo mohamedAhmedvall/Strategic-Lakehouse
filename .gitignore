@@ -1,0 +1,19 @@
+# Artefacts générés par le pipeline (reproductibles : python src/pipeline.py)
+poc/data/
+poc/lakehouse/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Outils
+.pytest_cache/
+.duckdb
+*.log
+.DS_Store
+.idea/
+.vscode/
