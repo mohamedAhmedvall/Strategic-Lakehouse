@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategic Lakehouse — Roadmap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --slate:#0f1b2d;
+    --deep:#13233a;
+    --silver:#8fa3b8;
+    --bronze:#b8763e;
+    --bronze-soft:#e9c9a3;
+    --silver-soft:#c7d4de;
+    --gold:#d9a441;
+    --gold-soft:#f2d68a;
+    --paper:#f4f1ea;
+    --ink:#1b2430;
+    --line:rgba(15,27,45,0.12);
+    --good:#3f7a5a;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    background:linear-gradient(180deg,var(--slate) 0%,var(--deep) 100%);
+    color:var(--paper);
+    padding:64px 6vw 90px;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px,transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px,transparent 1px);
+    background-size:42px 42px;
+    mask-image:radial-gradient(ellipse at top right, black, transparent 70%);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--silver-soft);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{content:"";width:24px;height:1px;background:var(--gold);}
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(2.4rem,5.5vw,4.2rem);
+    line-height:1.02;
+    margin:0 0 18px;
+    max-width:14ch;
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:300;
+    color:var(--gold-soft);
+  }
+  .hero p.lede{
+    max-width:640px;
+    font-size:1.08rem;
+    line-height:1.6;
+    color:var(--silver-soft);
+    margin:0 0 38px;
+  }
+
+  /* medallion strip in hero */
+  .medallion-strip{
+    display:flex;
+    gap:0;
+    border:1px solid rgba(255,255,255,0.16);
+    border-radius:10px;
+    overflow:hidden;
+    max-width:680px;
+    position:relative;
+    z-index:2;
+  }
+  .medallion-strip a{
+    flex:1;
+    text-decoration:none;
+    padding:18px 20px;
+    border-right:1px solid rgba(255,255,255,0.12);
+    transition:background 0.2s ease;
+    position:relative;
+  }
+  .medallion-strip a:last-child{border-right:none;}
+  .medallion-strip a:hover{background:rgba(255,255,255,0.05);}
+  .medallion-strip .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    display:block;
+    margin-bottom:6px;
+  }
+  .medallion-strip .lbl{
+    font-family:'Fraunces',serif;
+    font-size:1.05rem;
+    color:#fff;
+  }
+  .ms-bronze .tag{color:var(--bronze-soft);}
+  .ms-silver .tag{color:var(--silver-soft);}
+  .ms-gold .tag{color:var(--gold-soft);}
+
+  /* progress bar (sticky) */
+  .progress-bar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(244,241,234,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:12px 6vw;
+    display:flex; align-items:center; gap:16px;
+  }
+  .progress-bar .track{
+    flex:1; height:6px; background:rgba(15,27,45,0.08); border-radius:99px; overflow:hidden;
+  }
+  .progress-bar .fill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg,var(--bronze),var(--silver),var(--gold));
+    transition:width 0.4s ease;
+  }
+  .progress-bar .count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--slate);
+    white-space:nowrap;
+  }
+  .progress-bar .resetbtn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    background:none;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:6px 10px;
+    cursor:pointer;
+    color:var(--slate);
+  }
+  .progress-bar .resetbtn:hover{border-color:var(--slate);}
+
+  /* ---------- MAIN LAYOUT ---------- */
+  main{
+    max-width:1180px;
+    margin:0 auto;
+    padding:70px 6vw 120px;
+  }
+
+  .phase{
+    margin-bottom:88px;
+    scroll-margin-top:70px;
+  }
+  .phase-head{
+    display:flex;
+    align-items:baseline;
+    gap:22px;
+    margin-bottom:8px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+  }
+  .phase-num{
+    font-family:'Fraunces',serif;
+    font-size:3.4rem;
+    font-weight:300;
+    line-height:1;
+    color:transparent;
+    -webkit-text-stroke:1.4px var(--ink);
+  }
+  .phase-titles h2{
+    font-family:'Fraunces',serif;
+    font-size:1.7rem;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .phase-titles .sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.06em;
+    color:var(--bronze);
+    text-transform:uppercase;
+  }
+
+  .task-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(310px,1fr));
+    gap:18px;
+    margin-top:28px;
+  }
+
+  .task{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 22px;
+    position:relative;
+    transition:border-color .2s ease, box-shadow .2s ease, transform .15s ease;
+  }
+  .task:hover{
+    border-color:rgba(15,27,45,0.25);
+    box-shadow:0 6px 18px rgba(15,27,45,0.06);
+  }
+  .task.done{
+    background:rgba(63,122,90,0.05);
+    border-color:rgba(63,122,90,0.3);
+  }
+  .task.done .task-title{
+    text-decoration:line-through;
+    color:#6b7785;
+  }
+  .task-row{
+    display:flex; gap:14px; align-items:flex-start;
+  }
+  .check{
+    flex:0 0 auto;
+    width:22px;height:22px;
+    border-radius:6px;
+    border:1.6px solid var(--line);
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:#fff;
+    transition:all .15s ease;
+    margin-top:2px;
+  }
+  .check svg{opacity:0;transition:opacity .15s ease;width:13px;height:13px;}
+  .task.done .check{background:var(--good);border-color:var(--good);}
+  .task.done .check svg{opacity:1;}
+  .task-body{flex:1;}
+  .task-title{
+    font-weight:600;
+    font-size:0.96rem;
+    margin:0 0 6px;
+    line-height:1.35;
+  }
+  .task-desc{
+    font-size:0.86rem;
+    color:#4d5867;
+    line-height:1.55;
+    margin:0;
+  }
+  .task-meta{
+    margin-top:12px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.04em;
+    padding:3px 9px;
+    border-radius:99px;
+    text-transform:uppercase;
+    border:1px solid currentColor;
+  }
+  .chip.must{color:#9b3a3a;}
+  .chip.should{color:var(--bronze);}
+  .chip.could{color:var(--good);}
+  .chip.deliverable{color:var(--slate); background:rgba(15,27,45,0.05); border-color:transparent;}
+
+  /* phase accent backgrounds */
+  #phase1{--accent:var(--bronze);}
+  #phase2{--accent:var(--silver);}
+  #phase3{--accent:var(--gold);}
+  #phase4{--accent:var(--slate);}
+  .phase-num{color:transparent;-webkit-text-stroke-color:var(--accent);}
+
+  /* knowledge base */
+  .kb{
+    margin-top:90px;
+    border-top:1px solid var(--line);
+    padding-top:48px;
+  }
+  .kb h2{
+    font-family:'Fraunces',serif;
+    font-size:1.5rem;
+    margin:0 0 24px;
+  }
+  .kb-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:28px;
+  }
+  .kb-col h3{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--bronze);
+    margin:0 0 12px;
+  }
+  .kb-col ul{list-style:none;margin:0;padding:0;}
+  .kb-col li{
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+    font-size:0.88rem;
+  }
+  .kb-col li a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--bronze-soft);}
+  .kb-col li a:hover{color:var(--bronze);}
+
+  /* footer note */
+  footer{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 6vw 60px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#7c8896;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+
+  @media (max-width:640px){
+    .hero{padding:48px 5vw 70px;}
+    main{padding:50px 5vw 90px;}
+    .medallion-strip{flex-direction:column;}
+    .medallion-strip a{border-right:none;border-bottom:1px solid rgba(255,255,255,0.12);}
+    .phase-num{font-size:2.4rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">La Plateforme · M2 IA &amp; Data Science · Projet GlobalTrade Solutions</div>
+  <h1>Strategic <em>Lakehouse</em></h1>
+  <p class="lede">Feuille de route du projet — de l'audit des silos applicatifs jusqu'à la soutenance devant le COMEX fictif. Quatre phases, un dépôt Git, un POC Bronze → Silver → Gold démontrable.</p>
+  <div class="medallion-strip">
+    <a href="#phase1" class="ms-bronze"><span class="tag">Phase 1</span><span class="lbl">Diagnostic</span></a>
+    <a href="#phase2" class="ms-silver"><span class="tag">Phase 2</span><span class="lbl">Spécification</span></a>
+    <a href="#phase3" class="ms-gold"><span class="tag">Phase 3</span><span class="lbl">Conception &amp; POC</span></a>
+    <a href="#phase4" style="color:#fff"><span class="tag" style="color:#cfd8e2">Phase 4</span><span class="lbl">Soutenance</span></a>
+  </div>
+</div>
+
+<div class="progress-bar">
+  <span class="count" id="progressCount">0 / 0 tâches</span>
+  <div class="track"><div class="fill" id="progressFill"></div></div>
+  <button class="resetbtn" id="resetBtn">Réinitialiser</button>
+</div>
+
+<main>
+
+  <!-- PHASE 1 -->
+  <section class="phase" id="phase1">
+    <div class="phase-head">
+      <div class="phase-num">01</div>
+      <div class="phase-titles">
+        <div class="sub">Bronze · Diagnostic et choix d'architecture</div>
+        <h2>Cartographier le silo, justifier le Lakehouse</h2>
+      </div>
+    </div>
+    <div class="task-grid">
+
+      <div class="task" data-id="p1-1">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Cartographie du SI existant (2 niveaux)</p>
+            <p class="task-desc">Niveau fonctionnel + applicatif. Identifier les 3 silos (ERP on-prem, CRM SaaS, fichiers Analytics) et leurs impacts sur la chaîne de valeur analytique.</p>
+            <div class="task-meta"><span class="chip deliverable">Schéma cartographie</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p1-2">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">S'inspirer du dataset commercial fragmenté</p>
+            <p class="task-desc">g_dim_products, g_fact_sales (ERP), g_dim_customers (CRM), exports CSV/Parquet agrégés (Analytics). Pas besoin d'exploitation complète, juste pour illustrer le silotage.</p>
+            <div class="task-meta"><span class="chip should">Inspiration</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p1-3">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Veille gouvernance SI &amp; data-driven</p>
+            <p class="task-desc">Maturity model (DataGalaxy, Acceldata), urbanisation du SI (Wandesk, Blueway, Eleven Labs).</p>
+            <div class="task-meta"><span class="chip should">Veille</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p1-4">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Tableau comparatif des 3 architectures</p>
+            <p class="task-desc">Data Warehouse Cloud vs Data Lake vs Lakehouse. Critères : coût, scalabilité, latence, conformité RGPD, aptitude à l'IA.</p>
+            <div class="task-meta"><span class="chip must">Livrable clé</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p1-5">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Recommandation Lakehouse (1 page)</p>
+            <p class="task-desc">3 arguments stratégiques démontrables justifiant le choix pour GlobalTrade.</p>
+            <div class="task-meta"><span class="chip must">Livrable : Synthèse diagnostic</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PHASE 2 -->
+  <section class="phase" id="phase2">
+    <div class="phase-head">
+      <div class="phase-num">02</div>
+      <div class="phase-titles">
+        <div class="sub">Silver · Spécification technique</div>
+        <h2>Modèle de données, CDC, risques, accessibilité</h2>
+      </div>
+    </div>
+    <div class="task-grid">
+
+      <div class="task" data-id="p2-1">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Modèle Bronze / Silver / Gold</p>
+            <p class="task-desc">Exemples de tables pour ≥ 2 domaines métier (ventes, stocks). Justifier les transformations entre couches.</p>
+            <div class="task-meta"><span class="chip must">Modélisation</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p2-2">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Cahier des charges fonctionnel</p>
+            <p class="task-desc">5 à 8 fonctionnalités priorisées (ingestion, stockage, requêtage, API BI, droits) — description + critère d'acceptation + MoSCoW.</p>
+            <div class="task-meta"><span class="chip must">Livrable : CDC</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p2-3">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Matrice des 5 risques clés</p>
+            <p class="task-desc">RGPD, perte de données, indisponibilité, sécurité des accès, dette technique — avec mitigation concrète.</p>
+            <div class="task-meta"><span class="chip must">Livrable : Matrice risques</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p2-4">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Section "Conformité &amp; Accessibilité Numérique"</p>
+            <p class="task-desc">Citer RGAA / WCAG. Lister 3 mesures concrètes (contraste, lecteurs d'écran, navigation clavier).</p>
+            <div class="task-meta"><span class="chip must">RGAA / WCAG</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PHASE 3 -->
+  <section class="phase" id="phase3">
+    <div class="phase-head">
+      <div class="phase-num">03</div>
+      <div class="phase-titles">
+        <div class="sub">Gold · Conception et POC</div>
+        <h2>Schémas C4 et pipeline Bronze → Silver → Gold + API</h2>
+      </div>
+    </div>
+    <div class="task-grid">
+
+      <div class="task" data-id="p3-1">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">3 schémas UML / C4</p>
+            <p class="task-desc">Contexte système · Composants de l'architecture interne · Flux d'ingestion (source brute → Gold).</p>
+            <div class="task-meta"><span class="chip must">Schémas C4</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p3-2">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Bronze — ingestion CSV simulé</p>
+            <p class="task-desc">Python / Pandas ou DuckDB. Chargement brut sans transformation.</p>
+            <div class="task-meta"><span class="chip must">POC étape 1</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p3-3">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Silver — nettoyage / typage / dédoublonnage</p>
+            <p class="task-desc">Transformation simple sur les données Bronze.</p>
+            <div class="task-meta"><span class="chip must">POC étape 2</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p3-4">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Gold + API — KPI exposé en JSON</p>
+            <p class="task-desc">Flask ou FastAPI. Requête Gold retournant un KPI métier.</p>
+            <div class="task-meta"><span class="chip must">POC étape 3</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p3-5">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Bonus — interface web temps réel</p>
+            <p class="task-desc">HTML/JS minimaliste affichant le KPI. Balises sémantiques (h1, label), contraste conforme PSH.</p>
+            <div class="task-meta"><span class="chip could">Bonus accessible</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p3-6">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Versionning Git + README</p>
+            <p class="task-desc">Dépôt "Strategic Lakehouse". README de lancement clair et reproductible pour la démo.</p>
+            <div class="task-meta"><span class="chip must">Livrable : Code + README</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PHASE 4 -->
+  <section class="phase" id="phase4">
+    <div class="phase-head">
+      <div class="phase-num">04</div>
+      <div class="phase-titles">
+        <div class="sub">Restitution · Présentation COMEX</div>
+        <h2>Soutenance devant CTO &amp; CDO fictifs</h2>
+      </div>
+    </div>
+    <div class="task-grid">
+
+      <div class="task" data-id="p4-1">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Deck de 15 à 20 slides</p>
+            <p class="task-desc">Trame : problématique → analyse → choix → architecture → démonstration POC → recommandations.</p>
+            <div class="task-meta"><span class="chip must">Livrable : Présentation</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p4-2">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Point recommandation "accessibilité = adoption"</p>
+            <p class="task-desc">Montrer que l'accessibilité du SI augmente l'adoption par les collaborateurs et réduit la dette technique de conformité.</p>
+            <div class="task-meta"><span class="chip must">Argument stratégique</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p4-3">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Préparer la justification orale</p>
+            <p class="task-desc">Savoir répondre sur l'impact de l'asynchronisme / fragmentation des données sur l'accès à l'information pour un utilisateur PSH.</p>
+            <div class="task-meta"><span class="chip should">Q&amp;A jury</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task" data-id="p4-4">
+        <div class="task-row">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-body">
+            <p class="task-title">Répétition du timing</p>
+            <p class="task-desc">20 min présentation + 10 min questions jury. Démo live de l'API (ou capture vidéo de secours).</p>
+            <div class="task-meta"><span class="chip must">Format soutenance</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="kb">
+    <h2>Base de connaissances</h2>
+    <div class="kb-grid">
+      <div class="kb-col">
+        <h3>Maturité data &amp; SI data-driven</h3>
+        <ul>
+          <li><a href="https://www.datagalaxy.com" target="_blank" rel="noopener">Data maturity model — DataGalaxy</a></li>
+          <li><a href="https://www.acceldata.io" target="_blank" rel="noopener">Étapes &amp; bénéfices — Acceldata</a></li>
+        </ul>
+      </div>
+      <div class="kb-col">
+        <h3>Data Lake / Warehouse / Lakehouse</h3>
+        <ul>
+          <li><a href="https://www.striim.com" target="_blank" rel="noopener">Comparatif des 3 architectures — Striim</a></li>
+          <li><a href="https://learn.microsoft.com" target="_blank" rel="noopener">Medallion Bronze/Silver/Gold — Databricks docs</a></li>
+        </ul>
+      </div>
+      <div class="kb-col">
+        <h3>Urbanisation du SI &amp; gouvernance</h3>
+        <ul>
+          <li><a href="https://www.wandesk.io" target="_blank" rel="noopener">Principes, enjeux, méthode — Wandesk</a></li>
+          <li><a href="https://www.blueway-software.com" target="_blank" rel="noopener">Trajectoire MDM/ERP — Blueway</a></li>
+          <li><a href="https://eleven-labs.com" target="_blank" rel="noopener">Urbanisation à l'ère de l'IA — Eleven Labs</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>Strategic Lakehouse — GlobalTrade Solutions (fictif) · La Plateforme M2 IA &amp; Data Science</span>
+  <span>Dépôt Git requis : <strong>Strategic Lakehouse</strong></span>
+</footer>
+
+<script>
+  const tasks = document.querySelectorAll('.task');
+  const fill = document.getElementById('progressFill');
+  const count = document.getElementById('progressCount');
+  const STORAGE_KEY = 'lakehouse-roadmap-progress';
+
+  function loadState(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch(e){ return {}; }
+  }
+  function saveState(state){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+  }
+  function updateProgress(){
+    const done = document.querySelectorAll('.task.done').length;
+    const total = tasks.length;
+    fill.style.width = (total ? (done/total*100) : 0) + '%';
+    count.textContent = done + ' / ' + total + ' tâches';
+  }
+
+  let state = loadState();
+  tasks.forEach(t => {
+    const id = t.dataset.id;
+    if(state[id]) t.classList.add('done');
+    const checkEl = t.querySelector('.check');
+    function toggle(){
+      t.classList.toggle('done');
+      state[t.dataset.id] = t.classList.contains('done');
+      saveState(state);
+      updateProgress();
+    }
+    checkEl.addEventListener('click', toggle);
+    t.addEventListener('click', (e) => {
+      if(e.target.closest('.check')) return;
+      toggle();
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    state = {};
+    saveState(state);
+    tasks.forEach(t => t.classList.remove('done'));
+    updateProgress();
+  });
+
+  updateProgress();
+</script>
+
+</body>
+</html>
