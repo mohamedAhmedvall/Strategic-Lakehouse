@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategic Lakehouse — Avancement du projet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --slate:#0f1b2d; --deep:#13233a; --silver:#8fa3b8; --bronze:#b8763e;
+    --bronze-soft:#e9c9a3; --silver-soft:#c7d4de; --gold:#d9a441; --gold-soft:#f2d68a;
+    --paper:#f4f1ea; --ink:#1b2430; --line:rgba(15,27,45,0.12); --good:#3f7a5a; --todo:#9b6b3a;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+
+  /* HERO */
+  .hero{position:relative;background:linear-gradient(180deg,var(--slate),var(--deep));color:var(--paper);padding:56px 6vw 64px;overflow:hidden;}
+  .hero::before{content:"";position:absolute;inset:0;
+    background-image:linear-gradient(rgba(255,255,255,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.035) 1px,transparent 1px);
+    background-size:42px 42px;mask-image:radial-gradient(ellipse at top right,black,transparent 70%);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver-soft);display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .eyebrow::before{content:"";width:24px;height:1px;background:var(--gold);}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(2.1rem,5vw,3.6rem);line-height:1.04;margin:0 0 14px;max-width:18ch;}
+  h1 em{font-style:italic;font-weight:300;color:var(--gold-soft);}
+  .hero p.lede{max-width:620px;font-size:1.05rem;line-height:1.6;color:var(--silver-soft);margin:0 0 30px;position:relative;z-index:2;}
+
+  .stats{display:flex;flex-wrap:wrap;gap:14px;position:relative;z-index:2;}
+  .stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:14px 18px;min-width:120px;}
+  .stat .n{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:600;color:#fff;line-height:1;}
+  .stat .l{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--silver-soft);margin-top:6px;}
+
+  /* PROGRESS */
+  .progress-wrap{position:sticky;top:0;z-index:50;background:rgba(244,241,234,0.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px 6vw;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .track{flex:1;min-width:160px;height:8px;background:rgba(15,27,45,0.08);border-radius:99px;overflow:hidden;}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--bronze),var(--silver),var(--gold));transition:width 1s ease;}
+  .progress-wrap .count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--slate);white-space:nowrap;}
+  .filters{display:flex;gap:8px;}
+  .filters button{font-family:'IBM Plex Mono',monospace;font-size:11px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;cursor:pointer;color:var(--slate);transition:all .15s;}
+  .filters button.active{background:var(--slate);color:#fff;border-color:var(--slate);}
+
+  main{max-width:1080px;margin:0 auto;padding:50px 6vw 100px;}
+  .section-title{font-family:'Fraunces',serif;font-size:1.5rem;margin:54px 0 8px;}
+  .section-sub{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.05em;color:var(--bronze);text-transform:uppercase;margin-bottom:22px;}
+
+  /* PHASE CARDS (accordion) */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+  .card:hover{box-shadow:0 6px 20px rgba(15,27,45,0.06);}
+  .card.todo{background:#fbf6ef;border-color:rgba(155,107,58,0.28);}
+  .card-head{display:flex;align-items:center;gap:16px;padding:18px 22px;cursor:pointer;user-select:none;}
+  .badge{flex:0 0 auto;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;color:#fff;font-size:.95rem;}
+  .b-done{background:var(--good);} .b-todo{background:var(--todo);}
+  .card-head h3{margin:0;font-size:1.04rem;flex:1;}
+  .pill{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:99px;border:1px solid currentColor;}
+  .pill.done{color:var(--good);} .pill.todo{color:var(--todo);}
+  .chev{transition:transform .25s;color:var(--silver);font-size:1.2rem;}
+  .card.open .chev{transform:rotate(90deg);}
+  .card-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+  .card.open .card-body{max-height:900px;}
+  .card-inner{padding:0 22px 22px 72px;}
+  .card-inner p{font-size:.92rem;color:#41505f;line-height:1.6;margin:0 0 12px;}
+  .card-inner ul{margin:0 0 6px;padding-left:18px;}
+  .card-inner li{font-size:.88rem;color:#41505f;line-height:1.7;}
+  .card-inner code{font-family:'IBM Plex Mono',monospace;font-size:.82rem;background:rgba(15,27,45,0.06);padding:2px 6px;border-radius:5px;}
+  .files{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .files span{font-family:'IBM Plex Mono',monospace;font-size:10.5px;background:var(--slate);color:var(--paper);padding:4px 9px;border-radius:6px;}
+
+  /* FLOW */
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin:8px 0 4px;}
+  .flow .node{flex:1;min-width:120px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center;position:relative;}
+  .flow .node .t{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--bronze);}
+  .flow .node .h{font-family:'Fraunces',serif;font-size:1.05rem;margin:4px 0 2px;}
+  .flow .node .d{font-size:.78rem;color:#5a6877;line-height:1.4;}
+  .flow .arrow{display:flex;align-items:center;color:var(--silver);font-weight:700;}
+  .n-bronze{border-top:3px solid var(--bronze);} .n-silver{border-top:3px solid var(--silver);}
+  .n-gold{border-top:3px solid var(--gold);} .n-api{border-top:3px solid var(--slate);}
+
+  /* DATA pipeline bar */
+  .datacmp{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;}
+  .datacmp .box{flex:1;min-width:200px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;}
+  .datacmp .box .big{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:600;}
+  .datacmp .box.raw .big{color:var(--bronze);} .datacmp .box.clean .big{color:var(--good);}
+  .datacmp .box .lab{font-size:.8rem;color:#5a6877;margin-top:2px;}
+  .quality{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .quality span{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#9b3a3a;border:1px solid rgba(155,58,58,.4);border-radius:99px;padding:4px 10px;}
+
+  footer{max-width:1080px;margin:0 auto;padding:0 6vw 60px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7c8896;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:22px;}
+  .hidden{display:none !important;}
+  @media(max-width:640px){.card-inner{padding-left:22px;} .flow .arrow{transform:rotate(90deg);}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">Suivi de projet · M2 IA &amp; Data Science · GlobalTrade Solutions</div>
+  <h1>Strategic <em>Lakehouse</em> — où en est-on&nbsp;?</h1>
+  <p class="lede">Récapitulatif visuel de tout ce qui a été réalisé jusqu'ici et de ce qu'il reste à faire. Le POC tourne réellement&nbsp;; les 4 phases du sujet sont livrées et poussées sur Git.</p>
+  <div class="stats">
+    <div class="stat"><div class="n">4/4</div><div class="l">Phases livrées</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">POC fonctionnel</div></div>
+    <div class="stat"><div class="n">6</div><div class="l">Sources / silos</div></div>
+    <div class="stat"><div class="n">8</div><div class="l">Endpoints API</div></div>
+    <div class="stat"><div class="n">7,69 M€</div><div class="l">CA calculé (démo)</div></div>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <span class="count" id="count">—</span>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <div class="filters">
+    <button data-f="all" class="active">Tout</button>
+    <button data-f="done">✅ Fait</button>
+    <button data-f="todo">🔜 Reste</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- FLUX -->
+  <h2 class="section-title">L'architecture en un coup d'œil</h2>
+  <div class="section-sub">Approche medallion · de la source brute au KPI</div>
+  <div class="flow">
+    <div class="node"><div class="t">Sources</div><div class="h">3 silos</div><div class="d">ERP · CRM · Analytics (CSV)</div></div>
+    <div class="arrow">→</div>
+    <div class="node n-bronze"><div class="t">Bronze</div><div class="h">Brut</div><div class="d">ingestion + traçabilité</div></div>
+    <div class="arrow">→</div>
+    <div class="node n-silver"><div class="t">Silver</div><div class="h">Nettoyé</div><div class="d">typage · dédoublonnage</div></div>
+    <div class="arrow">→</div>
+    <div class="node n-gold"><div class="t">Gold</div><div class="h">KPI</div><div class="d">agrégats métier</div></div>
+    <div class="arrow">→</div>
+    <div class="node n-api"><div class="t">Service</div><div class="h">API + UI</div><div class="d">FastAPI · dashboard</div></div>
+  </div>
+
+  <!-- CE QU'ON A FAIT -->
+  <h2 class="section-title">Ce qu'on a fait</h2>
+  <div class="section-sub">Les 4 phases du sujet + le POC, committés et poussés</div>
+
+  <div class="card done" data-cat="done">
+    <div class="card-head"><div class="badge b-done">1</div><h3>Phase 1 — Diagnostic &amp; choix d'architecture</h3><span class="pill done">Fait</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <p>Diagnostic complet du SI fragmenté de GlobalTrade et justification du choix Lakehouse.</p>
+      <ul>
+        <li>Cartographie du SI sur <strong>2 niveaux</strong> (fonctionnel + applicatif, schémas Mermaid)</li>
+        <li>Constat du silotage (ERP / CRM / fichiers) et de ses impacts</li>
+        <li><strong>Tableau comparatif</strong> Data Warehouse vs Data Lake vs Lakehouse (coût, scalabilité, latence, RGPD, IA)</li>
+        <li>Recommandation Lakehouse avec <strong>3 arguments stratégiques</strong> démontrables</li>
+      </ul>
+      <div class="files"><span>docs/01-diagnostic.md</span></div>
+    </div></div>
+  </div>
+
+  <div class="card done" data-cat="done">
+    <div class="card-head"><div class="badge b-done">2</div><h3>Phase 2 — Spécification technique</h3><span class="pill done">Fait</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <p>Modèle de données, cahier des charges, risques et accessibilité.</p>
+      <ul>
+        <li>Modèle <strong>Bronze / Silver / Gold</strong> sur 2 domaines métier (ventes + stocks) avec justification des transformations</li>
+        <li>Cahier des charges fonctionnel : <strong>8 fonctionnalités priorisées MoSCoW</strong></li>
+        <li><strong>Matrice des 5 risques</strong> (RGPD, perte de données, indisponibilité, sécurité, dette technique) + mitigations</li>
+        <li>Section <strong>Conformité &amp; Accessibilité</strong> (RGAA / WCAG, 3 mesures concrètes)</li>
+      </ul>
+      <div class="files"><span>docs/02-specification-technique.md</span></div>
+    </div></div>
+  </div>
+
+  <div class="card done" data-cat="done">
+    <div class="card-head"><div class="badge b-done">3</div><h3>Phase 3 — Conception (C4) &amp; POC</h3><span class="pill done">Fait</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <p>Schémas d'architecture <strong>et un prototype qui tourne vraiment</strong>, de bout en bout.</p>
+      <ul>
+        <li><strong>3 schémas C4</strong> : contexte système, composants internes, flux d'ingestion</li>
+        <li>POC <strong>DuckDB + Parquet</strong> : pipeline Bronze → Silver → Gold reproductible en 1 commande</li>
+        <li><strong>API FastAPI</strong> : 8 endpoints KPI + doc Swagger pour la démo live</li>
+        <li><strong>Dashboard web accessible</strong> (HTML sémantique, contrastes AA, navigation clavier, aria-live)</li>
+      </ul>
+      <div class="files"><span>docs/03-conception-c4.md</span><span>poc/src/*.py</span><span>poc/web/index.html</span></div>
+    </div></div>
+  </div>
+
+  <div class="card done" data-cat="done">
+    <div class="card-head"><div class="badge b-done">4</div><h3>Phase 4 — Soutenance</h3><span class="pill done">Fait</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <p>Tout le matériel pour la restitution devant le COMEX fictif.</p>
+      <ul>
+        <li>Trame de <strong>deck 18 slides</strong> (problématique → analyse → choix → architecture → démo → reco)</li>
+        <li>Script de <strong>démonstration live</strong> + filet de sécurité (capture vidéo)</li>
+        <li>Argument « accessibilité = adoption » + <strong>préparation des questions du jury</strong></li>
+        <li>Plan de timing 20 min + 10 min de Q&amp;A</li>
+      </ul>
+      <div class="files"><span>docs/04-soutenance.md</span></div>
+    </div></div>
+  </div>
+
+  <div class="card done" data-cat="done">
+    <div class="card-head"><div class="badge b-done">✓</div><h3>Socle &amp; outillage</h3><span class="pill done">Fait</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <ul>
+        <li>README racine + README du POC (lancement reproductible)</li>
+        <li>Roadmap interactive intégrée au dépôt</li>
+        <li>Code versionné sur la branche Git, <strong>poussé sur GitHub</strong></li>
+        <li>Accès écriture GitHub débloqué pour pousser les commits</li>
+      </ul>
+      <div class="files"><span>README.md</span><span>poc/README.md</span><span>roadmap/index.html</span><span>.gitignore</span></div>
+    </div></div>
+  </div>
+
+  <!-- DONNÉES -->
+  <h2 class="section-title">Les données</h2>
+  <div class="section-sub">Simulées, volontairement « sales » pour démontrer la couche Silver</div>
+  <div class="datacmp">
+    <div class="box raw"><div class="big">6 090</div><div class="lab">ventes brutes ingérées (Bronze)</div></div>
+    <div class="box clean"><div class="big">5 880</div><div class="lab">ventes valides après nettoyage (Silver)</div></div>
+    <div class="box"><div class="big">6</div><div class="lab">fichiers source sur 3 silos (ERP, CRM, Analytics)</div></div>
+  </div>
+  <div class="quality">
+    <span>dates multi-formats</span><span>~1,5 % doublons</span><span>quantités négatives</span><span>prix manquants</span><span>casse incohérente</span>
+  </div>
+  <p style="font-size:.88rem;color:#41505f;margin-top:14px;line-height:1.6;">
+    Données générées par <code>generate_data.py</code> (seed fixe → reproductible). Non versionnées par défaut
+    (<code>.gitignore</code>) car régénérables&nbsp;; seul le code qui les produit est dans le dépôt.
+  </p>
+
+  <!-- RESTE À FAIRE -->
+  <h2 class="section-title">Ce qu'il reste à faire</h2>
+  <div class="section-sub">Optionnel — le sujet est déjà couvert</div>
+
+  <div class="card todo" data-cat="todo">
+    <div class="card-head"><div class="badge b-todo">!</div><h3>Renommer le dépôt en « Strategic-Lakehouse »</h3><span class="pill todo">À ta charge</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <p>Le sujet impose ce nom de dépôt. Action manuelle (10 s), droit Administration que je n'ai pas :
+      <code>Settings → Repository name → Rename</code>. GitHub redirige l'ancienne URL automatiquement.</p>
+    </div></div>
+  </div>
+
+  <div class="card todo" data-cat="todo">
+    <div class="card-head"><div class="badge b-todo">→</div><h3>Générer le vrai deck PowerPoint</h3><span class="pill todo">Optionnel</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <p>La trame des 18 slides est prête (<code>docs/04</code>). Je peux produire un <code>.pptx</code> réel
+      (via Gamma/Canva) à partir de cette trame si tu veux le support visuel fini.</p>
+    </div></div>
+  </div>
+
+  <div class="card todo" data-cat="todo">
+    <div class="card-head"><div class="badge b-todo">→</div><h3>Décider : committer les données&nbsp;?</h3><span class="pill todo">À décider</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <p>Aujourd'hui les CSV/Parquet sont gitignorés (régénérables). Si tu veux qu'un correcteur voie les
+      données <strong>sans rien lancer</strong>, je les sors du <code>.gitignore</code> et je les pousse.</p>
+    </div></div>
+  </div>
+
+  <div class="card todo" data-cat="todo">
+    <div class="card-head"><div class="badge b-todo">→</div><h3>Durcissements optionnels du POC</h3><span class="pill todo">Bonus</span><span class="chev">›</span></div>
+    <div class="card-body"><div class="card-inner">
+      <ul>
+        <li><strong>Authentification API</strong> (OAuth2 / JWT) — mentionnée dans la matrice des risques (R4)</li>
+        <li><strong>CDC incrémental</strong> (ingestion en delta plutôt que rechargement complet) — fonctionnalité « Could »</li>
+        <li>Ouverture d'une <strong>Pull Request</strong> de la branche vers <code>main</code></li>
+        <li>Quelques <strong>tests automatisés</strong> sur le pipeline (qualité des données)</li>
+      </ul>
+    </div></div>
+  </div>
+
+</main>
+
+<footer>
+  <span>Strategic Lakehouse — GlobalTrade Solutions (fictif) · Suivi de projet</span>
+  <span>Phases 1→4 livrées · POC opérationnel</span>
+</footer>
+
+<script>
+  // Accordions
+  document.querySelectorAll('.card-head').forEach(h=>{
+    h.addEventListener('click',()=>h.parentElement.classList.toggle('open'));
+  });
+  // Ouvre la première carte
+  document.querySelector('.card')?.classList.add('open');
+
+  // Filtres
+  const cards=[...document.querySelectorAll('.card')];
+  document.querySelectorAll('.filters button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.filters button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      const f=b.dataset.f;
+      cards.forEach(c=>c.classList.toggle('hidden', f!=='all' && c.dataset.cat!==f));
+    });
+  });
+
+  // Barre de progression
+  const total=cards.length, done=cards.filter(c=>c.dataset.cat==='done').length;
+  document.getElementById('fill').style.width=(done/total*100)+'%';
+  document.getElementById('count').textContent=done+' / '+total+' blocs terminés';
+</script>
+</body>
+</html>
