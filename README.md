@@ -18,8 +18,18 @@ demande**, sur une base prête pour les futures couches d'IA agentique.
 | 1 | Synthèse diagnostic + recommandation d'architecture | [`docs/01-diagnostic.md`](docs/01-diagnostic.md) |
 | 2 | Spécification technique (modèle de données, CDC, matrice des risques, accessibilité) | [`docs/02-specification-technique.md`](docs/02-specification-technique.md) |
 | 3 | Conception (schémas C4) + POC de bout en bout | [`docs/03-conception-c4.md`](docs/03-conception-c4.md) · [`poc/`](poc/) |
-| 4 | Présentation soutenance (COMEX) | [`docs/04-soutenance.md`](docs/04-soutenance.md) |
+| 4 | Présentation soutenance (COMEX) — trame + **deck 18 slides** | [`docs/04-soutenance.md`](docs/04-soutenance.md) · [`presentation/index.html`](presentation/index.html) |
 | — | Roadmap interactive du projet | [`roadmap/index.html`](roadmap/index.html) |
+
+## Présentation de soutenance
+
+Le support (18 slides, autonome, **sans dépendance réseau**) s'ouvre dans un
+navigateur : [`presentation/index.html`](presentation/index.html).
+
+- Navigation : `←` / `→` (ou clic), `N` affiche les notes de l'orateur, `F` plein écran.
+- Export PDF : `Ctrl/Cmd + P` (une slide par page).
+- Répartition de la parole : **Mohamed** ouvre (slides 1–6), **Skander** (7–12),
+  **Yann** (13–18) — 6 slides chacun.
 
 ## Le POC en 2 commandes
 
@@ -60,6 +70,7 @@ Sources (3 silos)  ──►  BRONZE  ──►  SILVER  ──►  GOLD  ──
 ├── README.md
 ├── docs/            # livrables documentaires (Phases 1 → 4)
 ├── poc/             # prototype Lakehouse (code + API + UI)
+├── presentation/   # deck de soutenance (HTML, 18 slides)
 └── roadmap/         # feuille de route interactive
 ```
 
