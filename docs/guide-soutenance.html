@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide de soutenance — Strategic Lakehouse (tout comprendre de A à Z)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --paper:#f6f3ec; --card:#fffdf8; --ink:#1b2430; --muted:#5c6b7a;
+    --slate:#13233a; --gold:#b8862b; --gold-bg:#fbf1d8; --bronze:#b8763e;
+    --silver:#5f7488; --line:#e3ddd0; --line2:#d3cbba;
+    --good:#2f7a52; --good-bg:#e6f2ea; --bad:#b3402f; --bad-bg:#f7e6e2;
+    --blue:#2a5b8c; --blue-bg:#e6eef6;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;line-height:1.62;font-size:16.5px;}
+  a{color:var(--blue);}
+  .wrap{display:grid;grid-template-columns:270px 1fr;max-width:1240px;margin:0 auto;}
+
+  /* ---- Sidebar TOC ---- */
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;
+    padding:26px 20px;border-right:1px solid var(--line);background:var(--card);}
+  nav.toc .brand{font-family:Fraunces,serif;font-weight:600;font-size:1.15rem;line-height:1.2;margin-bottom:4px;}
+  nav.toc .sub{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:18px;}
+  nav.toc ol{list-style:none;margin:0;padding:0;counter-reset:s;}
+  nav.toc li{margin:2px 0;}
+  nav.toc a{display:block;text-decoration:none;color:var(--ink);font-size:.9rem;padding:5px 8px;border-radius:7px;}
+  nav.toc a:hover{background:var(--gold-bg);}
+  nav.toc a::before{counter-increment:s;content:counter(s) ". ";color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:.8rem;}
+  nav.toc a.plain::before{content:"";}
+
+  /* ---- Content ---- */
+  main{padding:44px 5vw 100px;max-width:900px;}
+  .hero{border-left:5px solid var(--gold);padding:4px 0 4px 22px;margin-bottom:14px;}
+  .hero .kick{font-family:'IBM Plex Mono',monospace;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);}
+  h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(1.9rem,4vw,2.7rem);line-height:1.1;margin:6px 0 8px;}
+  .hero p{color:var(--muted);margin:0;font-size:1.05rem;max-width:64ch;}
+  h2{font-family:Fraunces,serif;font-weight:600;font-size:1.65rem;margin:52px 0 6px;padding-top:16px;border-top:1px solid var(--line);scroll-margin-top:20px;}
+  h2 .n{color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:1.1rem;margin-right:10px;}
+  h3{font-size:1.15rem;margin:28px 0 6px;color:var(--slate);}
+  h4{font-size:1rem;margin:18px 0 4px;color:var(--slate);}
+  p{margin:10px 0;}
+  ul,ol.body{margin:8px 0;padding-left:22px;}
+  li{margin:5px 0;}
+  strong{color:var(--slate);}
+  code{font-family:'IBM Plex Mono',monospace;background:#eee7d8;padding:1px 6px;border-radius:5px;font-size:.88em;color:#7a5a12;}
+  pre{background:var(--slate);color:#e9edf2;border-radius:12px;padding:16px 18px;overflow:auto;
+    font-family:'IBM Plex Mono',monospace;font-size:.86rem;line-height:1.55;margin:12px 0;}
+  pre .c{color:#8fd3a8;} pre .k{color:#f2c86b;}
+  .lead{font-size:1.12rem;color:var(--slate);}
+
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;}
+  .box.tip{border-left:5px solid var(--good);background:var(--good-bg);}
+  .box.warn{border-left:5px solid var(--bad);background:var(--bad-bg);}
+  .box.key{border-left:5px solid var(--gold);background:var(--gold-bg);}
+  .box.q{border-left:5px solid var(--blue);background:var(--blue-bg);}
+  .box .h{font-weight:700;display:block;margin-bottom:4px;color:var(--slate);}
+  .box.tip .h::before{content:"✅ ";} .box.warn .h::before{content:"⚠️ ";}
+  .box.key .h::before{content:"🎯 ";} .box.q .h::before{content:"🎤 ";}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  caption{caption-side:top;text-align:left;color:var(--muted);font-size:.85rem;padding:0 0 8px;}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;}
+  thead th{background:var(--slate);color:#fff;font-weight:600;}
+  tbody tr:nth-child(even){background:#faf7f0;}
+  .win{color:var(--good);font-weight:600;}
+
+  .term{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:12px 0;}
+  .term .word{font-family:Fraunces,serif;font-weight:600;font-size:1.12rem;color:var(--slate);}
+  .term .fr{font-size:.85rem;color:var(--muted);font-style:italic;}
+  .term .def{margin-top:6px;}
+  .term .say{margin-top:8px;font-size:.92rem;background:var(--gold-bg);border-radius:8px;padding:8px 12px;}
+  .term .say b{color:var(--gold);}
+
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.02em;}
+  .p-moh{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold);}
+  .p-sk{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue);}
+  .p-ya{background:#efe6dc;color:var(--bronze);border:1px solid var(--bronze);}
+
+  .layers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0;}
+  .lay{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card);border-top:4px solid var(--line);}
+  .lay.b{border-top-color:var(--bronze);} .lay.s{border-top-color:var(--silver);} .lay.g{border-top-color:var(--gold);}
+  .lay h4{margin:0 0 6px;} .lay ul{padding-left:18px;font-size:.9rem;} .lay li{margin:3px 0;}
+
+  .steps{counter-reset:st;list-style:none;padding:0;}
+  .steps>li{position:relative;padding:12px 0 12px 46px;border-bottom:1px dashed var(--line);}
+  .steps>li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:12px;
+    width:30px;height:30px;border-radius:50%;background:var(--slate);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;}
+
+  .footer{margin-top:60px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;}
+  .backtop{display:inline-block;margin-top:8px;font-size:.8rem;}
+
+  @media (max-width:900px){
+    .wrap{grid-template-columns:1fr;}
+    nav.toc{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);}
+    .layers{grid-template-columns:1fr;}
+  }
+  @media print{
+    nav.toc{display:none;}
+    .wrap{display:block;} main{max-width:none;padding:0 12mm;}
+    h2{break-before:auto;} pre,.box,table,.term{break-inside:avoid;}
+    a{color:var(--ink);text-decoration:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ TOC ============ -->
+<nav class="toc">
+  <div class="brand">Strategic Lakehouse</div>
+  <div class="sub">Guide de soutenance</div>
+  <ol>
+    <li><a href="#pitch">Le projet en 1 minute</a></li>
+    <li><a href="#contexte">Le contexte &amp; la mission</a></li>
+    <li><a href="#concepts">Les 12 concepts à maîtriser</a></li>
+    <li><a href="#produit">Ce qu'on a produit (4 phases)</a></li>
+    <li><a href="#poc">Le POC expliqué de bout en bout</a></li>
+    <li><a href="#chiffres">Les chiffres clés à retenir</a></li>
+    <li><a href="#demo">La démo live, pas à pas</a></li>
+    <li><a href="#qa">Les questions du jury + réponses</a></li>
+    <li><a href="#roles">Qui dit quoi (par orateur)</a></li>
+    <li><a href="#antiseche">Anti-sèche express</a></li>
+  </ol>
+  <div class="sub" style="margin-top:20px;">Astuce</div>
+  <p style="font-size:.82rem;color:var(--muted);margin:0;">Ce guide s'imprime en PDF : <code>Ctrl/Cmd + P</code>.</p>
+</nav>
+
+<!-- ============ CONTENT ============ -->
+<main>
+  <div class="hero">
+    <div class="kick">Support de révision · pour toute l'équipe</div>
+    <h1>Tout comprendre du projet<br>pour le défendre en soutenance</h1>
+    <p>Ce document explique <strong>ce qu'on a construit</strong>, <strong>pourquoi</strong>, et
+    <strong>tout le vocabulaire</strong> nécessaire — même si tu n'as pas touché au projet.
+    Lis-le en entier une fois, puis révise les sections 6 à 10 la veille.</p>
+  </div>
+
+  <!-- 1 -->
+  <h2 id="pitch"><span class="n">01</span>Le projet en 1 minute</h2>
+  <p class="lead">On joue un <strong>cabinet de conseil</strong>. Notre client fictif,
+  <strong>GlobalTrade Solutions</strong> (distributeur de produits), a ses données éparpillées dans
+  3 systèmes qui ne se parlent pas. Résultat : impossible d'avoir des indicateurs fiables, et
+  encore moins de faire de l'IA.</p>
+  <p>Notre mission : <strong>concevoir et prototyper une architecture « Lakehouse »</strong> qui
+  centralise toutes ces données, les nettoie, et les expose sous forme d'indicateurs (KPI)
+  consultables à la demande — via une petite application web qu'on a vraiment codée (le POC).</p>
+  <div class="box key">
+    <span class="h">La phrase qui résume tout</span>
+    « Une IA n'est intelligente qu'à la hauteur des données fiables qu'on lui confie. » On a donc
+    d'abord réglé le problème des <em>données</em> (les unifier, les nettoyer, les gouverner) avant
+    de parler d'IA. Le Lakehouse est le socle qui rend possible la BI aujourd'hui et l'IA demain.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="contexte"><span class="n">02</span>Le contexte &amp; la mission</h2>
+  <h3>Le problème : 3 silos qui ne communiquent pas</h3>
+  <table>
+    <thead><tr><th>Silo (système)</th><th>Ce qu'il contient</th><th>Le souci</th></tr></thead>
+    <tbody>
+      <tr><td><strong>ERP on-premise</strong> (interne, vieux)</td><td>Produits, stocks, ventes historiques</td><td>Fermé, difficile à interroger</td></tr>
+      <tr><td><strong>CRM SaaS</strong> (dans le cloud)</td><td>Clients, segments, interactions</td><td>Déconnecté de l'ERP ; la clé client ne correspond pas</td></tr>
+      <tr><td><strong>Fichiers Analytics</strong></td><td>Exports CSV/Parquet de ventes agrégées</td><td>Batch manuel, aucune gouvernance</td></tr>
+    </tbody>
+  </table>
+  <div class="box warn">
+    <span class="h">Ce que le silotage coûte (à savoir par cœur)</span>
+    <ul style="margin:0;">
+      <li><strong>Pas de vue 360 client</strong> — on ne peut pas croiser le chiffre d'affaires avec le segment client.</li>
+      <li><strong>KPI incohérents</strong> — chaque service recalcule ses chiffres à la main.</li>
+      <li><strong>Risque RGPD</strong> — les données ne sont pas traçables (d'où viennent-elles ? depuis quand ?).</li>
+      <li><strong>Latence</strong> — l'info arrive trop tard (exports en lot, la nuit).</li>
+      <li><strong>Qualité</strong> — doublons, dates dans plusieurs formats, valeurs aberrantes.</li>
+    </ul>
+  </div>
+  <p><strong>Le périmètre</strong> : pas de déploiement cloud réel. On livre une <em>conception
+  rigoureuse</em> + un <em>POC démontrable</em> (POC = « Proof Of Concept », preuve de concept).</p>
+
+  <!-- 3 -->
+  <h2 id="concepts"><span class="n">03</span>Les 12 concepts à maîtriser</h2>
+  <p>Si tu comprends ces 12 mots, tu peux suivre et défendre n'importe quelle slide.</p>
+
+  <div class="term">
+    <span class="word">1. Data-driven &amp; maturité data</span>
+    <div class="def">Une organisation « pilotée par la donnée » prend ses décisions à partir de données
+    fiables plutôt qu'à l'intuition. Le <em>data maturity model</em> décrit les étapes : de « données
+    silotées / réactif » jusqu'à « données gouvernées / prédictif (IA) ».</div>
+    <div class="say"><b>Si on demande :</b> « GlobalTrade est aujourd'hui au stade le plus bas (silos, réactif).
+    Notre plan la fait monter en maturité par étapes. »</div>
+  </div>
+
+  <div class="term">
+    <span class="word">2. Silos &amp; urbanisation du SI</span>
+    <div class="def">Un <strong>silo</strong> = un système isolé dont les données ne circulent pas.
+    L'<strong>urbanisation du SI</strong> = organiser le système d'information comme une ville : au lieu
+    de tout démolir, on <em>encapsule</em> l'existant derrière un socle commun.</div>
+    <div class="say"><b>Argument clé :</b> « On ne remplace pas l'ERP ni le CRM — on les branche comme
+    des <em>sources</em> sur le Lakehouse. C'est prudent et moins coûteux. »</div>
+  </div>
+
+  <div class="term">
+    <span class="word">3. Data Warehouse vs Data Lake vs Lakehouse</span>
+    <div class="def">Les 3 grandes façons de centraliser des données. Le tableau comparatif est notre
+    argument central (slide 7).</div>
+    <table style="margin-top:8px;">
+      <thead><tr><th>Architecture</th><th>En une phrase</th><th>Limite</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Data Warehouse</strong> (entrepôt)</td><td>Ranger les données structurées pour la BI. Rapide, propre.</td><td>Cher, fermé, mauvais pour l'IA</td></tr>
+        <tr><td><strong>Data Lake</strong> (lac)</td><td>Tout stocker en vrac, pas cher, tout format.</td><td>Devient un « marécage » (<em>data swamp</em>) sans gouvernance</td></tr>
+        <tr><td class="win"><strong>Lakehouse</strong></td><td>Le meilleur des deux : le rangement/rigueur du Warehouse SUR le stockage ouvert et pas cher du Lake.</td><td>Plus récent, mais standard aujourd'hui</td></tr>
+      </tbody>
+    </table>
+    <div class="say"><b>Phrase à retenir :</b> « Le Lakehouse réunit la rigueur du Warehouse et
+    l'ouverture économique du Lake. »</div>
+  </div>
+
+  <div class="term">
+    <span class="word">4. L'architecture medallion : Bronze / Silver / Gold</span>
+    <div class="def">La façon d'organiser les données <em>dans</em> le Lakehouse, en 3 couches de
+    qualité croissante (comme des médailles). C'est LE cœur du projet.</div>
+    <div class="layers">
+      <div class="lay b"><h4>🥉 Bronze — brut</h4><ul>
+        <li>Les données <strong>telles quelles</strong>, aucune modification</li>
+        <li>On ajoute juste la <strong>traçabilité</strong> : d'où ça vient, quand c'est arrivé</li>
+        <li>But : ne rien perdre, pouvoir rejouer l'historique</li></ul></div>
+      <div class="lay s"><h4>🥈 Silver — nettoyé</h4><ul>
+        <li><strong>Typage</strong> (dates, nombres), <strong>dédoublonnage</strong></li>
+        <li>Dates multi-formats corrigées, valeurs aberrantes écartées</li>
+        <li>But : données <strong>fiables</strong></li></ul></div>
+      <div class="lay g"><h4>🥇 Gold — métier</h4><ul>
+        <li>Les <strong>KPI</strong> pré-calculés (CA, top produits…)</li>
+        <li>Prêts à consommer par la BI et l'IA</li>
+        <li>But : répondre vite aux questions business</li></ul></div>
+    </div>
+    <div class="say"><b>Si on demande « pourquoi 3 couches ? » :</b> « Chaque couche a un rôle :
+    Bronze garantit la traçabilité, Silver la fiabilité, Gold la performance. Et on garde le Bronze
+    pour pouvoir tout recalculer si une règle change — utile aussi pour ré-entraîner un modèle d'IA. »</div>
+  </div>
+
+  <div class="term">
+    <span class="word">5. DuckDB &amp; Parquet</span>
+    <div class="def"><strong>Parquet</strong> = un format de fichier <em>colonnaire</em> et <em>ouvert</em>
+    (non propriétaire) idéal pour l'analytique. <strong>DuckDB</strong> = un moteur de base de données
+    qui exécute du SQL directement sur ces fichiers, sans serveur lourd à installer.</div>
+    <div class="say"><b>Si on demande « pourquoi DuckDB dans le POC ? » :</b> « Pour démontrer le concept
+    Lakehouse (SQL analytique + Parquet ouvert) sans monter d'infrastructure. En production, on
+    mettrait un moteur distribué avec un format de table ACID comme Delta ou Iceberg. »</div>
+  </div>
+
+  <div class="term">
+    <span class="word">6. API REST, JSON &amp; FastAPI</span>
+    <div class="def">Une <strong>API</strong> est une « prise » qui permet à d'autres programmes de
+    demander des données. <strong>REST</strong> = un style d'API où on interroge des URL
+    (ex. <code>/api/kpi/revenue/monthly</code>). <strong>JSON</strong> = le format texte de la réponse.
+    <strong>FastAPI</strong> = la bibliothèque Python qu'on a utilisée pour créer cette API (elle génère
+    aussi une doc interactive « Swagger »).</div>
+    <div class="say"><b>Argument stratégique :</b> « La même API sert le dashboard aujourd'hui et servira
+    un agent IA demain — un seul point d'accès à la donnée. »</div>
+  </div>
+
+  <div class="term">
+    <span class="word">7. KPI &amp; BI</span>
+    <div class="def"><strong>KPI</strong> = indicateur clé de performance (ex. chiffre d'affaires mensuel).
+    <strong>BI</strong> (Business Intelligence) = l'ensemble des outils pour analyser ces indicateurs et
+    aider à décider.</div>
+  </div>
+
+  <div class="term">
+    <span class="word">8. RGPD</span>
+    <div class="def">Le règlement européen sur la protection des données personnelles. Impose de savoir
+    <em>d'où</em> viennent les données, <em>combien de temps</em> on les garde, et de limiter l'accès.</div>
+    <div class="say"><b>Comment on y répond :</b> « Traçabilité dès le Bronze, droits d'accès par couche,
+    pseudonymisation des données personnelles en Gold, durée de rétention définie. » (c'est le risque R1)</div>
+  </div>
+
+  <div class="term">
+    <span class="word">9. Accessibilité : RGAA, WCAG, PSH</span>
+    <div class="def"><strong>WCAG</strong> = normes internationales d'accessibilité web.
+    <strong>RGAA</strong> = leur déclinaison légale française. <strong>PSH</strong> = personne en
+    situation de handicap. Objectif : que tout le monde puisse utiliser le dashboard.</div>
+    <div class="say"><b>3 mesures qu'on a réellement implémentées :</b> contrastes suffisants
+    (ratio ≥ 4,5:1), HTML sémantique lisible par les lecteurs d'écran, navigation entièrement au clavier.</div>
+  </div>
+
+  <div class="term">
+    <span class="word">10. MoSCoW (priorisation)</span>
+    <div class="def">Une méthode pour prioriser les fonctionnalités : <strong>M</strong>ust (indispensable),
+    <strong>S</strong>hould (souhaitable), <strong>C</strong>ould (optionnel), <strong>W</strong>on't
+    (pas maintenant). On l'utilise dans le cahier des charges (8 fonctionnalités).</div>
+  </div>
+
+  <div class="term">
+    <span class="word">11. Le modèle C4 (schémas d'architecture)</span>
+    <div class="def">Une méthode pour dessiner une architecture logicielle à plusieurs niveaux de zoom.
+    On en a fait 3 : <strong>Contexte</strong> (qui parle au système), <strong>Composants</strong>
+    (les briques internes), et <strong>Flux</strong> (le parcours d'une donnée).</div>
+  </div>
+
+  <div class="term">
+    <span class="word">12. CDC (Change Data Capture)</span>
+    <div class="def">Technique pour ne charger que les <em>nouvelles</em> données (les changements) plutôt
+    que tout recharger à chaque fois. Chez nous, c'est conçu mais volontairement <strong>hors du
+    périmètre du POC</strong> (priorité « Could »).</div>
+  </div>
+
+  <!-- 4 -->
+  <h2 id="produit"><span class="n">04</span>Ce qu'on a produit (les 4 phases)</h2>
+  <p>Le dépôt Git contient exactement ce que le sujet demande. Voici la carte des livrables.</p>
+  <table>
+    <thead><tr><th>Phase</th><th>Ce qu'on a livré</th><th>Fichier dans le dépôt</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1 · Diagnostic</strong></td><td>Cartographie du SI (2 niveaux), constat des silos, comparatif des 3 architectures, recommandation du Lakehouse (3 arguments)</td><td><code>docs/01-diagnostic.md</code></td></tr>
+      <tr><td><strong>2 · Spécification</strong></td><td>Modèle de données Bronze/Silver/Gold, cahier des charges (8 fonctionnalités MoSCoW), matrice des 5 risques, section accessibilité</td><td><code>docs/02-specification-technique.md</code></td></tr>
+      <tr><td><strong>3 · Conception + POC</strong></td><td>3 schémas C4 + le prototype qui tourne vraiment (code Python + API + dashboard)</td><td><code>docs/03-conception-c4.md</code> · <code>poc/</code></td></tr>
+      <tr><td><strong>4 · Présentation</strong></td><td>La trame de soutenance + le deck de 18 slides</td><td><code>docs/04-soutenance.md</code> · <code>presentation/index.html</code></td></tr>
+    </tbody>
+  </table>
+  <div class="box tip">
+    <span class="h">Bon à savoir</span>
+    Le dépôt s'appelle bien <strong>Strategic Lakehouse</strong>, tout est versionné sur Git, et le
+    POC est <strong>reproductible</strong> depuis le README en 2 commandes — exactement ce qu'exige le sujet.
+  </div>
+
+  <!-- 5 -->
+  <h2 id="poc"><span class="n">05</span>Le POC expliqué de bout en bout</h2>
+  <p>Le POC est un vrai mini-Lakehouse qui fonctionne. Voici le trajet d'une donnée, et le fichier
+  Python responsable de chaque étape (dans <code>poc/src/</code>).</p>
+  <ol class="steps">
+    <li><strong>On fabrique des données réalistes</strong> — <code>generate_data.py</code> crée les CSV des
+    3 silos, <em>volontairement imparfaits</em> (doublons, dates mélangées, quantités négatives, prix manquants).
+    C'est ce qui rend le nettoyage démontrable.</li>
+    <li><strong>Bronze — on ingère brut</strong> — <code>bronze.py</code> charge les CSV tels quels en Parquet,
+    en ajoutant 3 colonnes de traçabilité : <code>_source_system</code>, <code>_source_file</code>, <code>_ingested_at</code>.</li>
+    <li><strong>Silver — on nettoie</strong> — <code>silver.py</code> type les colonnes, parse les dates
+    (formats <code>2024-01-05</code> ET <code>05/01/2024</code>), supprime les doublons, écarte les ventes à
+    quantité ≤ 0 (des retours), et ré-impute les prix manquants depuis le référentiel produits.</li>
+    <li><strong>Gold — on calcule les KPI</strong> — <code>gold.py</code> agrège : CA mensuel, CA par pays,
+    par canal, par segment client (la fameuse vue 360), top produits, et stock en risque de rupture.</li>
+    <li><strong>API — on expose</strong> — <code>api.py</code> (FastAPI) lit les fichiers Gold et répond en
+    JSON sur des URL comme <code>/api/kpi/revenue/monthly</code>. Il sert aussi le dashboard.</li>
+    <li><strong>Dashboard — on restitue</strong> — <code>web/index.html</code> affiche les KPI dans une page
+    web <em>accessible</em> (contraste, clavier, lecteurs d'écran).</li>
+  </ol>
+  <p>Le fichier <code>pipeline.py</code> enchaîne les étapes 1→4 en une seule commande.</p>
+  <div class="box key">
+    <span class="h">La phrase de synthèse du POC</span>
+    « Une ligne de vente entre en Bronze <em>telle quelle</em> (même fausse), ressort <em>fiable</em> en
+    Silver, devient un <em>KPI</em> en Gold, et est servie en JSON par l'API. Tout est reproductible. »
+  </div>
+
+  <!-- 6 -->
+  <h2 id="chiffres"><span class="n">06</span>Les chiffres clés à retenir</h2>
+  <p>Ce sont les <strong>vrais</strong> résultats produits par le POC (à citer pendant la démo) :</p>
+  <table>
+    <thead><tr><th>Indicateur</th><th>Valeur</th><th>Ce que ça prouve</th></tr></thead>
+    <tbody>
+      <tr><td>Chiffre d'affaires total fiabilisé</td><td><strong>7,69 M€</strong></td><td>Le KPI principal, calculé sur données propres</td></tr>
+      <tr><td>Ventes valides après nettoyage</td><td><strong>5 880</strong> (sur 6 090)</td><td>≈ 210 lignes écartées (doublons + retours) → la couche Silver sert à quelque chose</td></tr>
+      <tr><td>Mois couverts</td><td><strong>24</strong></td><td>2 ans d'historique</td></tr>
+      <tr><td>Alertes de rupture de stock</td><td><strong>11</strong></td><td>Le domaine « stocks » fonctionne aussi (2ᵉ domaine métier)</td></tr>
+    </tbody>
+  </table>
+  <div class="box tip"><span class="h">Astuce mémoire</span> Retiens juste : <strong>7,69 M€ · 5 880 ventes ·
+  24 mois · 11 alertes</strong>. Si on te demande « et les 210 lignes en moins ? » → « doublons d'ingestion
+  et retours à quantité négative, écartés en Silver pour ne pas gonfler le CA ».</div>
+
+  <!-- 7 -->
+  <h2 id="demo"><span class="n">07</span>La démo live, pas à pas</h2>
+  <p>C'est le moment le plus important (démonstration <strong>obligatoire</strong> selon le sujet).</p>
+  <pre><span class="c"># 1) Se placer dans le dossier du POC et installer</span>
+cd poc
+pip install -r requirements.txt
+
+<span class="c"># 2) Construire le Lakehouse (Bronze → Silver → Gold)</span>
+python src/pipeline.py        <span class="c"># montre les compteurs de lignes qui défilent</span>
+
+<span class="c"># 3) Lancer l'API + le dashboard</span>
+uvicorn src.api:app --reload</pre>
+  <p>Puis, dans le navigateur :</p>
+  <ol class="body">
+    <li><strong>http://127.0.0.1:8000/docs</strong> → exécuter <code>GET /api/kpi/revenue/monthly</code>
+    → montrer le <strong>JSON</strong> qui revient (le KPI fiabilisé). <em>C'est l'appel API exigé par le jury.</em></li>
+    <li><strong>http://127.0.0.1:8000/</strong> → le <strong>dashboard</strong> affiche synthèse, CA par pays,
+    top produits, alertes stock.</li>
+    <li><strong>Preuve d'accessibilité</strong> : naviguer <strong>au clavier</strong> (touche Tab), montrer le
+    contour de focus visible et le lien « aller au contenu ».</li>
+  </ol>
+  <div class="box warn"><span class="h">Filet de sécurité</span> Le sujet autorise une <strong>capture vidéo</strong>
+  de secours en cas de bug technique. Enregistrez la démo à l'avance. Elle doit rester reproductible depuis le README.</div>
+
+  <!-- 8 -->
+  <h2 id="qa"><span class="n">08</span>Les questions du jury + réponses</h2>
+  <p>Le jury joue le <strong>CTO</strong> (technique) et le <strong>CDO</strong> (données). Voici les questions
+  probables et des réponses courtes à s'approprier.</p>
+
+  <div class="box q"><span class="h">« Pourquoi pas un simple Data Warehouse ? »</span>
+  Excellent en BI, mais il coûte cher, verrouille sur un fournisseur, et ferme la porte à l'IA. Le Lakehouse
+  fait de la BI <em>et</em> de l'IA, sur des formats ouverts (Parquet).</div>
+
+  <div class="box q"><span class="h">« Comment garantissez-vous le RGPD ? »</span>
+  Traçabilité dès le Bronze (origine + horodatage), droits d'accès par couche, pseudonymisation des données
+  personnelles en Gold, et durée de rétention définie. C'est le risque R1 de notre matrice.</div>
+
+  <div class="box q"><span class="h">« Pourquoi DuckDB, ce n'est pas un vrai Lakehouse de production ? »</span>
+  Exact, et c'est assumé : DuckDB + Parquet démontre le <em>concept</em> (SQL analytique sur stockage colonnaire
+  ouvert) sans infrastructure. En production : moteur distribué + format de table ACID (Delta / Iceberg).</div>
+
+  <div class="box q"><span class="h">Question ACCESSIBILITÉ (souvent posée) : « Impact de la fragmentation / de
+  l'asynchronisme des données pour un utilisateur en situation de handicap ? »</span>
+  Deux points : (1) la <strong>fragmentation</strong> oblige à jongler entre plusieurs outils ; pour un
+  utilisateur au lecteur d'écran ou au clavier, chaque interface non accessible est un blocage — multiplier les
+  sources multiplie les obstacles. (2) L'<strong>asynchronisme</strong> (données en retard) crée des
+  incohérences : quelqu'un qui écoute une synthèse vocale ne peut pas « scanner » l'écran pour repérer une donnée
+  périmée — il dépend d'une source <em>unique, fiable et à jour</em>. Le Lakehouse répond aux deux.</div>
+
+  <div class="box q"><span class="h">« En quoi l'accessibilité est un intérêt stratégique, pas une contrainte ? »</span>
+  Elle <strong>augmente l'adoption</strong> de l'outil par tous les collaborateurs (meilleur ROI), et
+  <strong>réduit la dette de conformité</strong> car intégrée dès la conception (pas de coûteuse mise à niveau plus tard).</div>
+
+  <div class="box q"><span class="h">« Quels sont vos 3 arguments pour le Lakehouse ? »</span>
+  (1) Un seul socle pour la BI <em>et</em> l'IA. (2) Gouvernance &amp; RGPD natifs. (3) Coût maîtrisé + zéro
+  verrou (formats ouverts). Et les trois sont <strong>prouvés par le POC</strong>.</div>
+
+  <div class="box q"><span class="h">« Comment gérez-vous les droits d'accès ? »</span>
+  Principe du moindre privilège, par couche : Bronze réservé aux data engineers, Silver aux analystes, Gold
+  accessible à tous via l'API. En production : authentification OAuth2 / JWT sur l'API.</div>
+
+  <!-- 9 -->
+  <h2 id="roles"><span class="n">09</span>Qui dit quoi (répartition par orateur)</h2>
+  <p>18 slides, 6 chacun. <strong>Mohamed ouvre.</strong> Chacun doit connaître ses slides à fond, mais lire
+  tout ce guide pour pouvoir répondre en Q&amp;A.</p>
+  <table>
+    <thead><tr><th>Orateur</th><th>Slides</th><th>Ce qu'il porte</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill p-moh">Mohamed</span></td><td>1 → 6</td><td>Couverture, constat, problématique, cartographie, impacts, approche data-driven</td></tr>
+      <tr><td><span class="pill p-sk">Skander</span></td><td>7 → 12</td><td>Comparatif des architectures, recommandation, les 3 schémas C4, le modèle de données</td></tr>
+      <tr><td><span class="pill p-ya">Yann</span></td><td>13 → 18</td><td>Spécification (CDC + risques), <strong>la démo live</strong>, dashboard, accessibilité, trajectoire, synthèse</td></tr>
+    </tbody>
+  </table>
+  <div class="box tip"><span class="h">Conseils de passage de parole</span>
+  Fin de slide 6, Mohamed dit : « Skander va maintenant présenter notre choix d'architecture. » Fin de slide 12,
+  Skander : « Yann va vous montrer que ça marche vraiment. » Le deck affiche le nom de l'orateur en haut à droite
+  de chaque slide — suivez-le.</div>
+  <div class="box warn"><span class="h">Timing (20 min)</span>
+  Problématique + analyse (1–6) ≈ 7 min · Choix + architecture (7–12) ≈ 7 min · Démo + recommandations (13–18)
+  ≈ 6 min. Puis 10 min de questions. <strong>Répétez la démo 2 fois</strong> avant le jour J.</div>
+
+  <!-- 10 -->
+  <h2 id="antiseche"><span class="n">10</span>Anti-sèche express (à relire 5 min avant)</h2>
+  <div class="box key">
+    <span class="h">Les 10 phrases qui sauvent</span>
+    <ol style="margin:4px 0;">
+      <li>« Une IA ne vaut que les données qu'on lui confie. »</li>
+      <li>3 silos : ERP (produits/stocks/ventes), CRM (clients), Analytics (exports).</li>
+      <li>Le Lakehouse = rigueur du Warehouse + ouverture du Data Lake.</li>
+      <li>Medallion : Bronze (brut + traçabilité), Silver (nettoyé/fiable), Gold (KPI métier).</li>
+      <li>DuckDB + Parquet = démontrer le concept sans infra ; en prod : Delta/Iceberg.</li>
+      <li>Une seule API sert le dashboard aujourd'hui et l'agent IA demain.</li>
+      <li>3 arguments : socle BI+IA · gouvernance/RGPD natifs · coût maîtrisé sans verrou.</li>
+      <li>RGPD = traçabilité Bronze + droits par couche + pseudonymisation Gold.</li>
+      <li>Accessibilité = adoption + moins de dette de conformité (RGAA/WCAG, contraste, clavier, lecteurs d'écran).</li>
+      <li>Chiffres démo : 7,69 M€ · 5 880 ventes · 24 mois · 11 alertes stock.</li>
+    </ol>
+  </div>
+  <div class="box"><span class="h">Les 5 risques (matrice), dans l'ordre</span>
+  R1 RGPD · R2 Perte de données · R3 Indisponibilité · R4 Sécurité des accès · R5 Dette technique —
+  chacun avec une mitigation concrète (cf. <code>docs/02</code> §3).</div>
+  <div class="box"><span class="h">Les mots à ne PAS confondre</span>
+  <strong>Data Lake</strong> (stockage brut en vrac) ≠ <strong>Lakehouse</strong> (lac + rigueur/gouvernance).
+  <strong>Bronze</strong> = brut ≠ <strong>Gold</strong> = agrégé. <strong>RGAA</strong> = norme FR d'accessibilité,
+  <strong>RGPD</strong> = protection des données perso (rien à voir, ne pas mélanger !).</div>
+
+  <div class="footer">
+    <p>Guide de révision — projet <strong>Strategic Lakehouse</strong> (M2 IA &amp; Data Science, cabinet de
+    conseil fictif pour GlobalTrade Solutions). Pour le détail : voir <code>docs/01</code> à <code>docs/04</code>,
+    le code dans <code>poc/</code>, et le deck <code>presentation/index.html</code>.</p>
+    <a class="backtop" href="#pitch">↑ Revenir en haut</a>
+  </div>
+</main>
+</div>
+</body>
+</html>

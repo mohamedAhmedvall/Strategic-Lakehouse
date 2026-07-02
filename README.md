@@ -31,6 +31,10 @@ navigateur : [`presentation/index.html`](presentation/index.html).
 - Répartition de la parole : **Mohamed** ouvre (slides 1–6), **Skander** (7–12),
   **Yann** (13–18) — 6 slides chacun.
 
+**Guide de révision** (pour comprendre et défendre le projet de A à Z, même sans
+y avoir travaillé) : [`docs/guide-soutenance.html`](docs/guide-soutenance.html) —
+concepts, POC expliqué, chiffres clés, questions du jury + réponses, anti-sèche.
+
 ## Le POC en 2 commandes
 
 ```bash
