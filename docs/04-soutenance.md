@@ -3,8 +3,12 @@
 **Format :** 20 min de présentation + 10 min de questions jury.
 **Mise en scène :** restitution d'un **cabinet de conseil** devant le **CTO** et
 le **CDO** (fictifs) de GlobalTrade Solutions.
-**Livrable :** deck de 15 à 20 slides.
+**Livrable :** deck de 15 à 20 slides → [`../presentation/index.html`](../presentation/index.html)
+(18 slides, autonome, navigable au clavier, exportable en PDF).
 **Trame imposée :** problématique → analyse → choix → architecture → démonstration POC → recommandations.
+
+**Répartition de la parole (équitable, 6 slides chacun) :** Mohamed ouvre (1–6),
+Skander (7–12), Yann (13–18).
 
 ---
 

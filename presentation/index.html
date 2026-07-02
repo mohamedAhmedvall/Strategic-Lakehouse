@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategic Lakehouse — Soutenance COMEX (GlobalTrade Solutions)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --slate:#0f1b2d; --deep:#13233a; --panel:#16263d; --panel2:#1d3150;
+    --silver:#8fa3b8; --bronze:#b8763e; --bronze-soft:#e9c9a3;
+    --silver-soft:#c7d4de; --gold:#d9a441; --gold-soft:#f2d68a;
+    --paper:#f4f1ea; --ink:#f4f1ea; --muted:#cdd8e4; --line:#2c3e57;
+    --good:#7ee0a8; --bad:#ff8a8a;
+    --sk-mohamed:#d9a441; --sk-skander:#8fa3b8; --sk-yann:#b8763e;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--slate); color:var(--ink);
+    font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif; line-height:1.5;
+    overflow:hidden;
+  }
+  a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  /* -------- Deck chrome -------- */
+  #progress{position:fixed;top:0;left:0;height:4px;background:var(--gold);width:0;z-index:50;transition:width .25s ease;}
+  .hud{position:fixed;z-index:40;font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--muted);}
+  #counter{bottom:18px;right:26px;}
+  #hint{bottom:18px;left:26px;color:var(--silver);}
+  .speaker{
+    position:fixed;top:16px;right:22px;z-index:40;display:flex;align-items:center;gap:8px;
+    background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px;
+    font-size:.82rem;font-weight:600;letter-spacing:.02em;
+  }
+  .speaker .dot{width:10px;height:10px;border-radius:50%;}
+  .speaker[data-sp="Mohamed"] .dot{background:var(--sk-mohamed);}
+  .speaker[data-sp="Skander"] .dot{background:var(--sk-skander);}
+  .speaker[data-sp="Yann"]    .dot{background:var(--sk-yann);}
+
+  /* -------- Slides -------- */
+  .slide{
+    position:fixed;inset:0;display:none;flex-direction:column;justify-content:center;
+    padding:6vh 8vw;animation:fade .35s ease;
+  }
+  .slide.active{display:flex;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:.8rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--gold);margin:0 0 10px;}
+  h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:0 0 14px;}
+  h2{font-family:Fraunces,serif;font-weight:600;font-size:clamp(1.5rem,3.4vw,2.4rem);margin:0 0 18px;}
+  .lead{font-size:clamp(1.05rem,1.7vw,1.35rem);color:var(--silver-soft);max-width:60ch;}
+  ul{margin:8px 0 0;padding-left:0;list-style:none;}
+  li{position:relative;padding:8px 0 8px 30px;font-size:clamp(.98rem,1.5vw,1.18rem);}
+  li::before{content:"";position:absolute;left:4px;top:16px;width:9px;height:9px;border-radius:2px;
+    background:var(--gold);transform:rotate(45deg);}
+  li strong{color:var(--gold-soft);}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+  .cols.diag{grid-template-columns:1fr 1.15fr;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;}
+  .card h3{margin:0 0 8px;font-size:1rem;color:var(--gold);font-family:Inter;letter-spacing:.02em;}
+  .card p{margin:0;color:var(--muted);font-size:.98rem;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;}
+  .stat .v{font-family:Fraunces,serif;font-size:clamp(1.6rem,3.2vw,2.4rem);font-weight:600;color:var(--gold-soft);}
+  .stat .l{color:var(--muted);font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;margin-top:6px;}
+  table{width:100%;border-collapse:collapse;font-size:clamp(.78rem,1.15vw,.98rem);background:var(--panel);
+    border-radius:12px;overflow:hidden;}
+  caption{caption-side:top;text-align:left;color:var(--muted);padding:0 0 10px;font-size:.9rem;}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);}
+  thead th{background:var(--panel2);font-weight:600;}
+  .win{color:var(--gold-soft);font-weight:600;}
+  .tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.03em;}
+  .must{background:rgba(217,164,65,.18);color:var(--gold-soft);border:1px solid var(--gold);}
+  .should{background:rgba(143,163,184,.18);color:var(--silver-soft);border:1px solid var(--silver);}
+  .could{background:rgba(184,118,62,.16);color:var(--bronze-soft);border:1px solid var(--bronze);}
+  .medallion{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;}
+  .layer{flex:1;min-width:200px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;
+    border-top:4px solid var(--line);}
+  .layer.b{border-top-color:var(--bronze);} .layer.s{border-top-color:var(--silver);} .layer.g{border-top-color:var(--gold);}
+  .layer h3{margin:0 0 6px;font-family:Inter;font-size:1.05rem;}
+  .layer.b h3{color:var(--bronze-soft);} .layer.s h3{color:var(--silver-soft);} .layer.g h3{color:var(--gold-soft);}
+  .layer ul{margin-top:4px;} .layer li{padding:5px 0 5px 22px;font-size:.92rem;} .layer li::before{top:13px;width:7px;height:7px;}
+  /* CSS diagrams (no external dependency) */
+  .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .node{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 15px;font-size:.9rem;text-align:center;}
+  .node .t{font-weight:600;color:var(--ink);} .node .s{display:block;font-size:.75rem;color:var(--muted);margin-top:3px;}
+  .node.b{border-top:3px solid var(--bronze);} .node.s2{border-top:3px solid var(--silver);} .node.g{border-top:3px solid var(--gold);}
+  .node.proc{background:#1a2c47;color:var(--silver-soft);font-family:'IBM Plex Mono',monospace;font-size:.8rem;padding:9px 12px;}
+  .arrow{color:var(--gold);font-size:1.3rem;flex:0 0 auto;font-weight:700;}
+  .arrow.lbl{display:inline-flex;flex-direction:column;align-items:center;line-height:1;}
+  .arrow.lbl em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--silver);margin-top:3px;}
+  .stack{display:flex;flex-direction:column;gap:10px;}
+  .hub{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;}
+  .hub .col{display:flex;flex-direction:column;gap:11px;}
+  .hub .center{background:var(--panel2);border:2px solid var(--gold);border-radius:16px;padding:20px;text-align:center;font-size:.95rem;}
+  .hub .center b{color:var(--gold-soft);font-size:1.05rem;}
+  .hub .center span{display:block;color:var(--muted);font-size:.82rem;margin-top:6px;}
+  .rel{color:var(--bad);font-size:.82rem;font-family:'IBM Plex Mono',monospace;margin-top:6px;}
+  .seq{display:flex;flex-direction:column;gap:6px;}
+  .seqrow{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;}
+  .seqrow .note{margin:0;color:var(--muted);font-size:.9rem;font-family:'IBM Plex Mono',monospace;}
+  .seqdown{color:var(--gold);font-size:1.1rem;font-weight:700;padding-left:66px;line-height:1;}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--panel);padding:2px 7px;border-radius:6px;color:var(--gold-soft);font-size:.9em;}
+  pre{background:#0a1320;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:auto;
+    font-family:'IBM Plex Mono',monospace;font-size:.9rem;color:var(--silver-soft);margin:14px 0 0;}
+  pre .c{color:var(--good);}
+  .cover-meta{margin-top:34px;display:flex;gap:34px;flex-wrap:wrap;align-items:flex-end;}
+  .team{font-family:'IBM Plex Mono',monospace;font-size:.9rem;color:var(--muted);}
+  .team b{color:var(--ink);}
+  .team .role{display:block;font-size:.75rem;color:var(--silver);margin-top:2px;}
+  .badge-line{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:.72rem;padding:4px 10px;border:1px solid var(--line);
+    border-radius:999px;color:var(--silver-soft);}
+
+  /* speaker notes */
+  #notes{position:fixed;left:0;right:0;bottom:0;z-index:45;background:rgba(8,15,26,.97);
+    border-top:1px solid var(--line);padding:16px 8vw;max-height:38vh;overflow:auto;display:none;}
+  #notes.show{display:block;}
+  #notes h4{margin:0 0 6px;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);}
+  #notes p{margin:0;color:var(--silver-soft);font-size:.95rem;}
+
+  @media (max-width:820px){.cols,.cols.diag,.grid3,.grid4{grid-template-columns:1fr;}}
+
+  /* print -> one slide per page (export PDF) */
+  @media print{
+    @page{size:1280px 720px;margin:0;}
+    body{overflow:visible;}
+    #progress,.hud,#notes{display:none!important;}
+    .slide{position:relative;inset:auto;display:flex!important;height:720px;width:1280px;
+      page-break-after:always;animation:none;}
+    .speaker{position:absolute;}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<!-- ============ SLIDE 1 — Couverture (Mohamed) ============ -->
+<section class="slide active" data-sp="Mohamed">
+  <p class="kicker">Cabinet de conseil · Restitution COMEX — CTO &amp; CDO de GlobalTrade Solutions</p>
+  <h1>Strategic&nbsp;Lakehouse</h1>
+  <p class="lead">Du système d'information silotée à la décision augmentée par l'IA.
+     Spécification &amp; prototype d'une architecture Lakehouse unifiée pour GlobalTrade Solutions.</p>
+  <div class="cover-meta">
+    <div class="team"><b>Mohamed</b><span class="role">Diagnostic &amp; problématique</span></div>
+    <div class="team"><b>Skander</b><span class="role">Choix &amp; architecture</span></div>
+    <div class="team"><b>Yann</b><span class="role">Spécification, POC &amp; recommandations</span></div>
+  </div>
+  <div class="badge-line">
+    <span class="badge">Medallion Bronze · Silver · Gold</span>
+    <span class="badge">DuckDB + Parquet</span>
+    <span class="badge">API FastAPI</span>
+    <span class="badge">Dashboard RGAA / WCAG</span>
+  </div>
+</section>
+
+<!-- ============ SLIDE 2 — Le constat (Mohamed) ============ -->
+<section class="slide" data-sp="Mohamed">
+  <p class="kicker">Le constat</p>
+  <h2>Un SI fragmenté en 3 silos qui bloque l'analytique — et l'IA</h2>
+  <div class="grid3">
+    <div class="card"><h3>🏢 ERP on-premise</h3><p>Vieillissant. Produits, stocks, ventes historiques. Temps réel interne, mais fermé.</p></div>
+    <div class="card"><h3>☁️ CRM SaaS</h3><p>Déconnecté. Clients, segments, interactions. Export asynchrone, clé client non réconciliée.</p></div>
+    <div class="card"><h3>📁 Fichiers Analytics</h3><p>Extractions CSV / Parquet de ventes agrégées. Batch manuel, sans gouvernance.</p></div>
+  </div>
+  <ul>
+    <li>Aucun <strong>socle de données commun</strong> ne relie les silos.</li>
+    <li>La chaîne de valeur analytique est <strong>rompue</strong> entre la production et l'exploitation de la donnée.</li>
+  </ul>
+</section>
+
+<!-- ============ SLIDE 3 — Problématique (Mohamed) ============ -->
+<section class="slide" data-sp="Mohamed">
+  <p class="kicker">Problématique</p>
+  <h2>Comment unifier la donnée pour décider vite <br>et préparer l'IA agentique&nbsp;?</h2>
+  <div class="card" style="max-width:66ch;margin-top:8px;border-left:4px solid var(--gold);">
+    <p style="font-family:Fraunces,serif;font-size:1.35rem;color:var(--gold-soft);font-style:italic;">
+      « Une IA n'est réellement intelligente qu'à la hauteur des données fiables et structurées qu'on lui confie. »</p>
+  </div>
+  <ul>
+    <li>Enjeu <strong>court terme</strong> : exposer des indicateurs BI fiables, à la demande.</li>
+    <li>Enjeu <strong>long terme</strong> : un socle prêt pour de futures couches d'IA agentique (assistant BI, prévision, churn).</li>
+  </ul>
+</section>
+
+<!-- ============ SLIDE 4 — Analyse : cartographie (Mohamed) ============ -->
+<section class="slide" data-sp="Mohamed">
+  <p class="kicker">Analyse — cartographie applicative</p>
+  <h2>Les 3 silos et leurs données</h2>
+  <div class="cols diag">
+    <div>
+      <ul>
+        <li><strong>ERP</strong> : <code>g_dim_products</code>, <code>g_fact_sales</code>, <code>g_fact_inventory</code></li>
+        <li><strong>CRM</strong> : <code>g_dim_customers</code>, <code>crm_interactions</code></li>
+        <li><strong>Analytics</strong> : <code>sales_daily.csv / .parquet</code></li>
+        <li>Cartographie sur <strong>2 niveaux</strong> : fonctionnel (chaîne de valeur) &amp; applicatif (systèmes).</li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="node b" style="text-align:left"><span class="t">🏢 ERP on-prem</span><span class="s">g_dim_products · g_fact_sales · g_fact_inventory</span></div>
+      <div class="node s2" style="text-align:left"><span class="t">☁️ CRM SaaS</span><span class="s">g_dim_customers · crm_interactions</span></div>
+      <div class="node g" style="text-align:left"><span class="t">📁 Fichiers Analytics</span><span class="s">sales_daily.csv / .parquet</span></div>
+      <div class="rel">⚠ export manuel · ⚠ clé client non réconciliée · ⚠ aucune intégration ERP ↔ CRM</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 5 — Analyse : impacts (Mohamed) ============ -->
+<section class="slide" data-sp="Mohamed">
+  <p class="kicker">Analyse — impacts sur la valeur</p>
+  <h2>Ce que le silotage coûte à GlobalTrade</h2>
+  <table>
+    <thead><tr><th>Symptôme</th><th>Cause racine</th><th>Impact analytique</th></tr></thead>
+    <tbody>
+      <tr><td>Pas de vue 360 client</td><td>Clé client non réconciliée ERP↔CRM</td><td>Impossible de croiser CA &amp; segment</td></tr>
+      <tr><td>KPI incohérents</td><td>Agrégats recalculés à la main</td><td>Perte de confiance, décisions retardées</td></tr>
+      <tr><td>Données non traçables</td><td>Aucune métadonnée d'ingestion</td><td class="win">Risque RGPD (origine, rétention)</td></tr>
+      <tr><td>Latence de la donnée</td><td>Exports batch asynchrones</td><td>L'information arrive trop tard</td></tr>
+      <tr><td>Qualité hétérogène</td><td>Pas de couche de nettoyage</td><td>Doublons, dates multi-formats, aberrations</td></tr>
+    </tbody>
+  </table>
+  <p class="lead" style="margin-top:16px;">Conséquence : le SI n'est <strong style="color:var(--gold-soft)">ni data-driven, ni prêt pour l'IA</strong>.</p>
+</section>
+
+<!-- ============ SLIDE 6 — Approche data-driven (Mohamed) ============ -->
+<section class="slide" data-sp="Mohamed">
+  <p class="kicker">Approche data-driven</p>
+  <h2>Faire monter le SI en maturité, par couches</h2>
+  <div class="grid4">
+    <div class="stat"><div class="v">1 · Unifier</div><div class="l">Un seul point de vérité pour les 3 silos</div></div>
+    <div class="stat"><div class="v">2 · Gouverner</div><div class="l">Traçabilité, qualité, conformité dès l'ingestion</div></div>
+    <div class="stat"><div class="v">3 · Exposer</div><div class="l">La donnée <em>as-a-service</em> via une API BI</div></div>
+    <div class="stat"><div class="v">4 · Industrialiser</div><div class="l">Urbaniser : encapsuler l'existant, ne pas tout remplacer</div></div>
+  </div>
+  <ul><li>Trajectoire adossée à un <strong>data maturity model</strong> : passer de « silotée / réactif » à « gouverné / prédictif ».</li></ul>
+  <p class="lead" style="margin-top:6px;">→ Skander prend la suite sur le choix d'architecture.</p>
+</section>
+
+<!-- ============ SLIDE 7 — Comparatif (Skander) ============ -->
+<section class="slide" data-sp="Skander">
+  <p class="kicker">Choix — analyse comparative</p>
+  <h2>Data Warehouse Cloud · Data Lake · Lakehouse</h2>
+  <table>
+    <thead><tr><th>Critère</th><th>DW Cloud</th><th>Data Lake</th><th>Lakehouse</th></tr></thead>
+    <tbody>
+      <tr><td>Coût</td><td>Élevé (couplé)</td><td>Faible</td><td class="win">Maîtrisé (compute découplé)</td></tr>
+      <tr><td>Scalabilité</td><td>Bonne mais chère</td><td>Très élevée</td><td class="win">Très élevée</td></tr>
+      <tr><td>Latence requêtes</td><td>Très bonne</td><td>Faible</td><td class="win">Bonne (colonnaire + ACID)</td></tr>
+      <tr><td>Gouvernance</td><td>Forte</td><td>Faible (data swamp)</td><td class="win">Forte (medallion + ACID)</td></tr>
+      <tr><td>Conformité RGPD</td><td>Bonne</td><td>Difficile</td><td class="win">Bonne (versioning, droits)</td></tr>
+      <tr><td>Aptitude à l'IA</td><td>Limitée</td><td>Bonne mais qualité faible</td><td class="win">Excellente</td></tr>
+      <tr><td>Verrou techno</td><td>Fort (propriétaire)</td><td>Faible</td><td class="win">Faible (Parquet ouvert)</td></tr>
+    </tbody>
+  </table>
+  <p class="lead" style="margin-top:14px;">Le Lakehouse réunit la <strong>rigueur du Warehouse</strong> et l'<strong>ouverture économique du Lake</strong>.</p>
+</section>
+
+<!-- ============ SLIDE 8 — Recommandation (Skander) ============ -->
+<section class="slide" data-sp="Skander">
+  <p class="kicker">Choix — recommandation</p>
+  <h2>Le Lakehouse pour GlobalTrade : 3 arguments démontrables</h2>
+  <div class="grid3">
+    <div class="card" style="border-top:4px solid var(--gold);">
+      <h3>1 · Un socle pour la BI <em>et</em> l'IA</h3>
+      <p>Bronze (brut, pour le ML) + Gold (agrégats gouvernés, pour la BI) sur la même plateforme. Pas de reconstruction à l'arrivée des agents.</p></div>
+    <div class="card" style="border-top:4px solid var(--gold);">
+      <h3>2 · Gouvernance &amp; RGPD natifs</h3>
+      <p>Medallion impose traçabilité, qualité et droits par couche. La fragmentation non traçable actuelle est neutralisée.</p></div>
+    <div class="card" style="border-top:4px solid var(--gold);">
+      <h3>3 · Coût maîtrisé, zéro verrou</h3>
+      <p>Stockage objet + compute découplé + formats ouverts (Parquet). Réversibilité garantie, on encapsule l'existant.</p></div>
+  </div>
+  <p class="lead" style="margin-top:16px;">Chacun des 3 arguments est <strong>prouvé par le POC</strong> (démo à venir).</p>
+</section>
+
+<!-- ============ SLIDE 9 — C4-1 contexte (Skander) ============ -->
+<section class="slide" data-sp="Skander">
+  <p class="kicker">Architecture — C4 niveau 1 (contexte)</p>
+  <h2>Le Lakehouse, point d'intégration unique</h2>
+  <div class="hub">
+    <div class="col">
+      <div class="node">🏢 ERP on-prem</div>
+      <div class="node">☁️ CRM SaaS</div>
+      <div class="node">📁 Fichiers Analytics</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;justify-content:center;">
+      <span class="arrow">→</span>
+      <div class="center"><b>🎯 Strategic Lakehouse</b><span>Bronze → Silver → Gold<br>+ API BI + Dashboard</span></div>
+      <span class="arrow">→</span>
+    </div>
+    <div class="col">
+      <div class="node">👤 Analyste / Décideur</div>
+      <div class="node">🤖 Futur agent IA</div>
+      <div class="node">👤 Collaborateur PSH</div>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:8px;">Les systèmes existants ne sont pas remplacés : ils sont <strong>encapsulés</strong> comme sources (urbanisation).</p>
+</section>
+
+<!-- ============ SLIDE 10 — C4-2/3 composants (Skander) ============ -->
+<section class="slide" data-sp="Skander">
+  <p class="kicker">Architecture — C4 niveau 2/3 (composants)</p>
+  <h2>Medallion Bronze / Silver / Gold + API + UI</h2>
+  <div class="flow" style="justify-content:center;margin-top:16px;gap:10px;">
+    <div class="node"><span class="t">3 silos</span><span class="s">CSV</span></div>
+    <span class="arrow lbl">→<em>bronze.py</em></span>
+    <div class="node b"><span class="t">🥉 Bronze</span></div>
+    <span class="arrow lbl">→<em>silver.py</em></span>
+    <div class="node s2"><span class="t">🥈 Silver</span></div>
+    <span class="arrow lbl">→<em>gold.py</em></span>
+    <div class="node g"><span class="t">🥇 Gold</span></div>
+    <span class="arrow lbl">→<em>api.py</em></span>
+    <div class="node proc">🌐 API</div>
+    <span class="arrow">→</span>
+    <div class="node"><span class="t">🖥️ Dashboard</span></div>
+  </div>
+  <p class="lead" style="margin-top:26px;">Stockage objet + <strong>Parquet</strong> (formats ouverts). Chaque étape (<code>bronze.py</code>, <code>silver.py</code>, <code>gold.py</code>, <code>api.py</code>) est un composant testable et isolé.</p>
+</section>
+
+<!-- ============ SLIDE 11 — Flux d'ingestion (Skander) ============ -->
+<section class="slide" data-sp="Skander">
+  <p class="kicker">Architecture — flux d'ingestion</p>
+  <h2>Une vente, du brut au KPI</h2>
+  <div class="seq" style="margin-top:8px;">
+    <div class="seqrow"><div class="node"><span class="t">Source ERP</span><span class="s">CSV</span></div>
+      <p class="note">ligne brute : <code>05/01/2024 · qty=-3 · prix vide</code></p></div>
+    <div class="seqdown">↓</div>
+    <div class="seqrow"><div class="node b"><span class="t">🥉 Bronze</span></div>
+      <p class="note">+ <code>_source_system</code>, <code>_ingested_at</code> — aucune transfo</p></div>
+    <div class="seqdown">↓</div>
+    <div class="seqrow"><div class="node s2"><span class="t">🥈 Silver</span></div>
+      <p class="note">date→DATE · qty&gt;0 (retour écarté) · prix ré-imputé · dédoublonnage</p></div>
+    <div class="seqdown">↓</div>
+    <div class="seqrow"><div class="node g"><span class="t">🥇 Gold</span></div>
+      <p class="note"><code>SUM(line_amount) GROUP BY mois</code></p></div>
+    <div class="seqdown">↓</div>
+    <div class="seqrow"><div class="node proc">🌐 API</div>
+      <p class="note"><code>GET /api/kpi/revenue/monthly → JSON</code></p></div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 12 — Modèle de données (Skander) ============ -->
+<section class="slide" data-sp="Skander">
+  <p class="kicker">Modèle de données — 2 domaines : Ventes &amp; Stocks</p>
+  <h2>3 couches, une justification à chaque passage</h2>
+  <div class="medallion">
+    <div class="layer b"><h3>🥉 Bronze — brut + traçabilité</h3>
+      <ul><li>Aucune transfo métier, tout en texte</li><li><code>erp_sales</code>, <code>erp_inventory</code>, <code>crm_customers</code>…</li><li>+ <code>_source_system</code>, <code>_ingested_at</code></li></ul></div>
+    <div class="layer s"><h3>🥈 Silver — nettoyé / typé</h3>
+      <ul><li>Parsing dates multi-format, dédoublonnage</li><li>Filtre <code>qty&gt;0</code>, prix ré-imputé</li><li><code>fact_sales</code>, <code>fact_inventory</code>, <code>dim_*</code></li></ul></div>
+    <div class="layer g"><h3>🥇 Gold — agrégats métier</h3>
+      <ul><li>Modélisé par KPI</li><li>CA mensuel, top produits, risque stock</li><li>Vue 360 : CA par segment client</li></ul></div>
+  </div>
+  <ul>
+    <li><strong>Bronze→Silver</strong> : fiabiliser (sans dédoublonnage, les doublons gonflent le CA).</li>
+    <li><strong>Silver→Gold</strong> : performance &amp; usage (pré-agréger la question métier). Bronze conservé = réversibilité &amp; ré-entraînement IA.</li>
+  </ul>
+</section>
+
+<!-- ============ SLIDE 13 — Spécification (Yann) ============ -->
+<section class="slide" data-sp="Yann">
+  <p class="kicker">Spécification technique</p>
+  <h2>Cahier des charges (MoSCoW) &amp; matrice des 5 risques</h2>
+  <div class="cols">
+    <div>
+      <table>
+        <caption>Fonctionnalités priorisées (extrait)</caption>
+        <tbody>
+          <tr><td>F1 Ingestion multi-sources + traçabilité</td><td><span class="tag must">Must</span></td></tr>
+          <tr><td>F2 Nettoyage / conformation Silver</td><td><span class="tag must">Must</span></td></tr>
+          <tr><td>F3 Agrégation métier Gold (KPI)</td><td><span class="tag must">Must</span></td></tr>
+          <tr><td>F4 API BI de requêtage (JSON)</td><td><span class="tag must">Must</span></td></tr>
+          <tr><td>F5 Dashboard accessible RGAA/WCAG</td><td><span class="tag should">Should</span></td></tr>
+          <tr><td>F6 Gestion des droits par couche</td><td><span class="tag should">Should</span></td></tr>
+          <tr><td>F8 Capture de changements (CDC)</td><td><span class="tag could">Could</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <table>
+        <caption>Risques clés &amp; mitigation</caption>
+        <tbody>
+          <tr><td>R1 <strong>RGPD</strong></td><td>Traçabilité, minimisation, pseudonymisation Gold</td></tr>
+          <tr><td>R2 Perte de données</td><td>Bronze immuable rejouable, stockage versionné</td></tr>
+          <tr><td>R3 Indisponibilité</td><td>Découplage, API stateless, <code>/health</code></td></tr>
+          <tr><td>R4 Sécurité accès</td><td>Moindre privilège, OAuth2/JWT, chiffrement</td></tr>
+          <tr><td>R5 Dette technique</td><td>Formats ouverts, couches nettes, a11y by design</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 14 — Démo POC (Yann) ============ -->
+<section class="slide" data-sp="Yann">
+  <p class="kicker">Démonstration POC ▶ live</p>
+  <h2>Le concept Lakehouse fonctionne — en 2 commandes</h2>
+  <div class="cols diag">
+    <div>
+      <pre><span class="c"># 1 · Construire Bronze → Silver → Gold</span>
+cd poc &amp;&amp; python src/pipeline.py
+
+<span class="c"># 2 · Servir l'API + le dashboard</span>
+uvicorn src.api:app --reload
+
+<span class="c"># → appel live du KPI</span>
+GET /api/kpi/revenue/monthly  →  JSON</pre>
+      <ul><li>Pipeline <strong>déterministe &amp; reproductible</strong> depuis le README.</li>
+          <li>Filet de sécurité : capture vidéo prête si instabilité.</li></ul>
+    </div>
+    <div class="grid4" style="grid-template-columns:1fr 1fr;">
+      <div class="stat"><div class="v">7,69 M€</div><div class="l">CA total fiabilisé</div></div>
+      <div class="stat"><div class="v">5 880</div><div class="l">ventes valides (6 090 → −210 retours/doublons)</div></div>
+      <div class="stat"><div class="v">24</div><div class="l">mois couverts</div></div>
+      <div class="stat"><div class="v">11</div><div class="l">alertes de rupture stock</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 15 — Démo dashboard (Yann) ============ -->
+<section class="slide" data-sp="Yann">
+  <p class="kicker">Démonstration — dashboard</p>
+  <h2>Des KPI restitués dans une UI accessible</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li>Synthèse, CA par pays, top produits, alertes stock.</li>
+        <li>Servi par l'<strong>API Gold</strong> — la même que consommeront les agents IA.</li>
+        <li>Rafraîchissement live via <code>fetch</code> + <code>aria-live</code>.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="card"><h3>Preuve d'accessibilité en direct</h3>
+        <ul>
+          <li>Navigation <strong>clavier</strong> (Tab) + focus visible</li>
+          <li><strong>Lien d'évitement</strong> « aller au contenu »</li>
+          <li>HTML <strong>sémantique</strong> : <code>&lt;h1&gt;</code>, <code>&lt;th scope&gt;</code>, <code>&lt;caption&gt;</code>, <code>&lt;label&gt;</code></li>
+          <li>Contraste <strong>AA ≥ 4,5:1</strong> (normes PSH)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 16 — Accessibilité = adoption (Yann) ============ -->
+<section class="slide" data-sp="Yann">
+  <p class="kicker">Recommandation — l'angle conseil</p>
+  <h2>L'accessibilité n'est pas une contrainte : c'est un levier business</h2>
+  <div class="grid3">
+    <div class="card"><h3>+ Adoption</h3><p>Une UI accessible sert <strong>tous</strong> les collaborateurs, pas seulement les PSH → meilleur ROI du Lakehouse.</p></div>
+    <div class="card"><h3>− Dette de conformité</h3><p>Intégrée dès la conception, elle évite une coûteuse mise en conformité ultérieure.</p></div>
+    <div class="card"><h3>Impact PSH</h3><p>Fin de la fragmentation (une source, une UI) + données fiabilisées → l'utilisateur en synthèse vocale dépend d'une <strong>source unique &amp; à jour</strong>.</p></div>
+  </div>
+  <p class="lead" style="margin-top:16px;">Réponse jury : fragmentation = multiplier les interfaces non accessibles ; asynchronisme = incohérences qu'un lecteur d'écran ne peut « scanner ». Le Lakehouse répond aux deux.</p>
+</section>
+
+<!-- ============ SLIDE 17 — Trajectoire (Yann) ============ -->
+<section class="slide" data-sp="Yann">
+  <p class="kicker">Trajectoire &amp; next steps</p>
+  <h2>Du POC à la production</h2>
+  <div class="grid3">
+    <div class="stat"><div class="v">CDC temps réel</div><div class="l">Ingestion incrémentale (clé + horodatage) plutôt que rechargement complet</div></div>
+    <div class="stat"><div class="v">Sécurité API</div><div class="l">OAuth2 / JWT, chiffrement en transit &amp; au repos, droits par couche</div></div>
+    <div class="stat"><div class="v">Couche IA agentique</div><div class="l">Assistant BI conversationnel sur la même API Gold</div></div>
+  </div>
+  <ul><li>En production : moteur distribué + <strong>table format ACID</strong> (Delta / Iceberg) sur stockage objet — le POC en démontre déjà le concept sur DuckDB + Parquet.</li></ul>
+</section>
+
+<!-- ============ SLIDE 18 — Synthèse & questions (Yann) ============ -->
+<section class="slide" data-sp="Yann">
+  <p class="kicker">Synthèse</p>
+  <h2>Un socle unique, gouverné, économique et ouvert</h2>
+  <ul>
+    <li>Il débloque la <strong>BI à la demande aujourd'hui</strong> et l'<strong>IA agentique demain</strong>.</li>
+    <li>Il transforme la fragmentation de GlobalTrade en <strong>avantage stratégique</strong>.</li>
+    <li>Prouvé de bout en bout par un <strong>POC reproductible</strong>.</li>
+  </ul>
+  <h1 style="margin-top:28px;font-size:clamp(1.8rem,4vw,2.8rem);">Merci — vos questions&nbsp;?</h1>
+  <p class="team" style="margin-top:10px;">Mohamed · Skander · Yann — Cabinet de conseil pour GlobalTrade Solutions</p>
+</section>
+
+<!-- HUD -->
+<div class="speaker hud" id="speaker"><span class="dot"></span><span id="spname">Mohamed</span></div>
+<div class="hud" id="counter">01 / 18</div>
+<div class="hud" id="hint">← → naviguer · N notes · F plein écran</div>
+
+<!-- Speaker notes -->
+<div id="notes"><h4>Notes de l'orateur</h4><p id="notes-body"></p></div>
+
+<script>
+  // ---- Speaker notes per slide (trame docs/04) ----
+  const NOTES = {
+    1:"Mohamed ouvre. Poser le cadre : nous sommes le cabinet de conseil, en face le CTO et le CDO. Présenter l'équipe et le fil : problématique → analyse → choix → architecture → démo → recommandations.",
+    2:"Décrire les 3 silos concrètement. Insister : aucun socle commun ne les relie, la chaîne analytique est rompue.",
+    3:"Formuler la question centrale. Lire la citation. Distinguer l'enjeu court terme (BI) et long terme (IA).",
+    4:"Montrer la carto applicative : nommer les tables. Souligner les 3 ruptures : export manuel, clé client non réconciliée, aucune intégration ERP↔CRM.",
+    5:"Dérouler le tableau d'impacts. Point d'attention : non-traçabilité = risque RGPD. Conclure : SI ni data-driven ni prêt pour l'IA. Passer la parole à Skander.",
+    6:"4 mouvements : unifier, gouverner, exposer, industrialiser. Relier au data maturity model. Transition vers le choix d'architecture.",
+    7:"Skander. Lire le comparatif ligne par ligne rapidement, appuyer sur les cases Lakehouse. Message : le Lakehouse réunit les deux mondes.",
+    8:"Les 3 arguments stratégiques. Insister que chacun est démontrable par le POC (annonce la démo).",
+    9:"C4-1 : le Lakehouse devient point d'intégration unique. Les systèmes existants sont encapsulés, pas remplacés (urbanisation).",
+    10:"C4-2/3 : dérouler le pipeline composant par composant, nommer les fichiers (bronze.py, silver.py, gold.py, api.py).",
+    11:"Séquence : suivre UNE vente (date FR, qty -3, prix vide) du brut au KPI. Montre concrètement le rôle de chaque couche.",
+    12:"Modèle 3 couches sur 2 domaines (ventes, stocks). Justifier chaque passage. Bronze conservé = réversibilité + ré-entraînement IA. Passer à Yann.",
+    13:"Yann. CDC en MoSCoW (5 à 8 features priorisées) + matrice des 5 risques avec mitigation concrète. Insister sur R1 RGPD.",
+    14:"DÉMO LIVE. Lancer le pipeline (montrer les compteurs de lignes), puis uvicorn, puis /docs → exécuter GET /api/kpi/revenue/monthly, montrer le JSON. Chiffres clés à commenter.",
+    15:"Ouvrir le dashboard. Preuve d'accessibilité EN DIRECT : navigation clavier (Tab), focus visible, lien d'évitement. Rappeler HTML sémantique + contraste AA.",
+    16:"Argument conseil : accessibilité = adoption + moins de dette de conformité. Préparer la réponse jury sur l'impact fragmentation/asynchronisme pour un utilisateur PSH.",
+    17:"Next steps : CDC temps réel, sécurité API OAuth2/JWT, couche IA agentique. En prod : Delta/Iceberg ACID ; le POC prouve déjà le concept.",
+    18:"Synthèse en une phrase : socle unique, gouverné, économique, ouvert. Remercier, ouvrir les questions (10 min)."
+  };
+
+  const slides = [...document.querySelectorAll('.slide')];
+  const total = slides.length;
+  let i = 0;
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  const speaker = document.getElementById('speaker');
+  const spname = document.getElementById('spname');
+  const notes = document.getElementById('notes');
+  const notesBody = document.getElementById('notes-body');
+  const pad = n => String(n).padStart(2,'0');
+
+  function show(n){
+    i = Math.max(0, Math.min(total-1, n));
+    slides.forEach((s,k)=>s.classList.toggle('active', k===i));
+    counter.textContent = pad(i+1)+' / '+pad(total);
+    progress.style.width = ((i+1)/total*100)+'%';
+    const sp = slides[i].dataset.sp;
+    spname.textContent = sp;
+    speaker.dataset.sp = sp;
+    notesBody.textContent = NOTES[i+1] || '';
+    location.hash = i+1;
+  }
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(i+1);}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(i-1);}
+    else if(e.key==='Home'){show(0);} else if(e.key==='End'){show(total-1);}
+    else if(e.key.toLowerCase()==='n'){notes.classList.toggle('show');}
+    else if(e.key.toLowerCase()==='f'){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+  });
+  // click right/left half to navigate
+  document.addEventListener('click', e=>{
+    if(e.target.closest('a,button,#notes')) return;
+    show(e.clientX > window.innerWidth/2 ? i+1 : i-1);
+  });
+  const start = parseInt(location.hash.slice(1),10);
+  show(Number.isInteger(start) && start>=1 ? start-1 : 0);
+</script>
+</body>
+</html>
